@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kchart/chart/chart_model.dart';
-import 'package:kchart/chart/chart_view.dart';
+import 'package:kchart/chart/kline_view.dart';
 
 class Example extends StatefulWidget {
   @override
@@ -40,7 +40,7 @@ class _ExampleState extends State<Example> {
       ),
       backgroundColor: Colors.white,
       body: Container(
-        child: ChartView(
+        child: KlineView(
           dataList: dataList,
         ),
       ),

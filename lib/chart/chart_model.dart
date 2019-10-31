@@ -14,4 +14,40 @@ class ChartModel {
     this.minPrice = minPrice;
     this.volume = volume;
   }
+  ///Main chart view
+  double leftStartX;
+  double rightEndX;
+  void setLeftStartX(double leftStartX) {
+    this.leftStartX = leftStartX;
+  }
+  void setRightEndX(double rightEndX) {
+    this.rightEndX = rightEndX;
+  }
+  ///MA
+  double priceMA5;
+  double priceMA10;
+  double priceMA30;
+  double volumeMA5;
+  double volumeMA10;
+  double volumeMA30;
+  // price MA
+  void setPriceMA5(double priceMA5) {
+    this.priceMA5 = priceMA5;
+  }
+  void setPriceMA10(double priceMA10) {
+    this.priceMA10 = priceMA10;
+  }
+  void setPriceMA30(double priceMA30) {
+    this.priceMA30 = priceMA30;
+  }
+  // volume ma
+  void setVolumeMA5(double volumeMA5) {
+    this.volumeMA5 = volumeMA5;
+  }
+  void setVolumeMA10(double volumeMA10) {
+    this.volumeMA10 = volumeMA10;
+  }
+  void setVolumeMA30(double volumeMA30) {
+    this.volumeMA30 = volumeMA30;
+  }
 }

@@ -20,7 +20,7 @@ class _KlineViewState extends State<KlineView> {
 
   List<ChartModel> _totalDataList = List();
   List<ChartModel> _viewDataList = List();
-  int _maxViewDataNum = 50;
+  int _maxViewDataNum = 30;
   int _startDataNum = 0;
   bool _isShowDetail = false;
   ChartModel _lastData;
@@ -31,7 +31,6 @@ class _KlineViewState extends State<KlineView> {
     // TODO: implement initState
     super.initState();
     initDataList();
-    print(_viewDataList.length);
   }
 
   /// init data list
@@ -40,7 +39,9 @@ class _KlineViewState extends State<KlineView> {
     _totalDataList.addAll(widget.dataList);
     _startDataNum = _totalDataList.length - _maxViewDataNum;
     ChartCalculator.calculateMa(_totalDataList);
-    _resetViewData();
+    setState(() {
+      _resetViewData();
+    });
   }
   /// add single data
   void addSingleData() {}
@@ -68,9 +69,6 @@ class _KlineViewState extends State<KlineView> {
   /// gesture
   void moveGestureDetector(DragUpdateDetails details) {
       double _distanceX = details.delta.dx * -1;
-
-    //  print(details.delta.dx * -1);
-
       if ((_startDataNum == 0 && _distanceX < 0)
           || (_startDataNum == _totalDataList.length - 1 - _maxViewDataNum && _distanceX > 0)
           || _startDataNum < 0
@@ -78,7 +76,9 @@ class _KlineViewState extends State<KlineView> {
         if (_isShowDetail) {
           _isShowDetail = false;
           if (_viewDataList.isNotEmpty) {
-            _lastData = _viewDataList[_viewDataList.length - 1];
+            setState(() {
+              _lastData = _viewDataList[_viewDataList.length - 1];
+            });
           }
         }
       } else {
@@ -90,7 +90,6 @@ class _KlineViewState extends State<KlineView> {
         }
       }
   }
-
   /// move data
   void moveData(double distanceX) {
     if (_maxViewDataNum < 60) {
@@ -109,14 +108,14 @@ class _KlineViewState extends State<KlineView> {
   /// move speed
   void setSpeed(double distanceX, double num) {
     if (distanceX.abs() > 1 && distanceX.abs() < 2) {
-      _startDataNum += ((distanceX * 10) % 2).toInt();
-      print("aaaaaaaaaaaaa$_startDataNum");
+      _startDataNum += ((distanceX * 20) % 2).round();
+      print("aaaaaaa${((distanceX * 10) % 2)}");
     } else if (distanceX.abs() < 10) {
-      _startDataNum += (distanceX % 2).toInt();
-      print("bbbbbbbbbbbbbbbbb$_startDataNum");
+      _startDataNum += (distanceX * 20 % 2).round();
+      print("bbbbbbb${(distanceX % 2).round()}");
     } else {
-      print("cccccccc$_startDataNum");
       _startDataNum += distanceX ~/ num;
+      print("ccccccc${(distanceX / num).round()}");
     }
   }
   /// move velocity
@@ -176,24 +175,19 @@ class _KlineViewState extends State<KlineView> {
       // recursion and delayed 15 milliseconds
       Future.delayed(Duration(milliseconds: 20), ()=> moveAnimation());
     }
-   // print(_velocityX);
   }
-  ///
-  ///
-  ///
   ///
   @override
   Widget build(BuildContext context) {
     ///
-    CustomPaint klineView = CustomPaint(painter: ChartPainter(viewDataList: _viewDataList));
+    CustomPaint klineView = CustomPaint(painter: ChartPainter(viewDataList: _viewDataList, maxViewDataNum: _maxViewDataNum));
     ///
     return GestureDetector(
       onHorizontalDragUpdate: moveGestureDetector,
       onHorizontalDragEnd: moveVelocity,
       child: Container(
-        margin: EdgeInsets.only(top: 20),
         width: MediaQuery.of(context).size.width,
-        height: 500.0,
+        height: 368.0,
         child: klineView,
       ),
     );

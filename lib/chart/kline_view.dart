@@ -25,7 +25,7 @@ class _KlineViewState extends State<KlineView> {
   bool _isShowDetail = false;
   ChartModel _lastData;
   double _velocityX;
-
+  ChartCalculator chartCalculator = ChartCalculator();
   @override
   void initState() {
     // TODO: implement initState
@@ -38,7 +38,7 @@ class _KlineViewState extends State<KlineView> {
     _totalDataList.clear();
     _totalDataList.addAll(widget.dataList);
     _startDataNum = _totalDataList.length - _maxViewDataNum;
-    ChartCalculator.calculateMa(_totalDataList);
+    chartCalculator.calculateMa(_totalDataList, false);
     setState(() {
       _resetViewData();
     });
@@ -68,27 +68,27 @@ class _KlineViewState extends State<KlineView> {
   }
   /// gesture
   void moveGestureDetector(DragUpdateDetails details) {
-      double _distanceX = details.delta.dx * -1;
-      if ((_startDataNum == 0 && _distanceX < 0)
-          || (_startDataNum == _totalDataList.length - 1 - _maxViewDataNum && _distanceX > 0)
-          || _startDataNum < 0
-          || _viewDataList.length < _maxViewDataNum) {
-        if (_isShowDetail) {
-          _isShowDetail = false;
-          if (_viewDataList.isNotEmpty) {
-            setState(() {
-              _lastData = _viewDataList[_viewDataList.length - 1];
-            });
-          }
-        }
-      } else {
+    double _distanceX = details.delta.dx * -1;
+    if ((_startDataNum == 0 && _distanceX < 0)
+        || (_startDataNum == _totalDataList.length - 1 - _maxViewDataNum && _distanceX > 0)
+        || _startDataNum < 0
+        || _viewDataList.length < _maxViewDataNum) {
+      if (_isShowDetail) {
         _isShowDetail = false;
-        if (_distanceX.abs() > 1) {
+        if (_viewDataList.isNotEmpty) {
           setState(() {
-            moveData(_distanceX);
+            _lastData = _viewDataList[_viewDataList.length - 1];
           });
         }
       }
+    } else {
+      _isShowDetail = false;
+      if (_distanceX.abs() > 1) {
+        setState(() {
+          moveData(_distanceX);
+        });
+      }
+    }
   }
   /// move data
   void moveData(double distanceX) {
@@ -122,9 +122,9 @@ class _KlineViewState extends State<KlineView> {
   void moveVelocity(DragEndDetails details) {
     if (_startDataNum > 0 && _startDataNum < _totalDataList.length - 1 - _maxViewDataNum) {
       if (details.velocity.pixelsPerSecond.dx > 6000) {
-        _velocityX = 10000;
+        _velocityX = 8000;
       } else if (details.velocity.pixelsPerSecond.dx  < -6000) {
-        _velocityX = -10000;
+        _velocityX = -8000;
       } else {
         _velocityX = details.velocity.pixelsPerSecond.dx;
       }
@@ -180,7 +180,11 @@ class _KlineViewState extends State<KlineView> {
   @override
   Widget build(BuildContext context) {
     ///
-    CustomPaint klineView = CustomPaint(painter: ChartPainter(viewDataList: _viewDataList, maxViewDataNum: _maxViewDataNum));
+    CustomPaint klineView = CustomPaint(painter: ChartPainter(
+        viewDataList: _viewDataList,
+        maxViewDataNum: _maxViewDataNum,
+        lastData: _lastData
+    ));
     ///
     return GestureDetector(
       onHorizontalDragUpdate: moveGestureDetector,

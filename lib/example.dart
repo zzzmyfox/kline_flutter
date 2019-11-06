@@ -31,12 +31,13 @@ class _ExampleState extends State<Example> {
       dataList.add(ChartModel(timestamp, openPrice, closePrice, maxPrice, minPrice, volume));
     }
   }
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
       appBar: AppBar(
-        title: Text("BTC/ZC"),
+        title: Text("ETH/ZC"),
       ),
       body: Container(
         margin: EdgeInsets.only(top: 20.0),

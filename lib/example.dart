@@ -41,9 +41,12 @@ class _ExampleState extends State<Example> {
       ),
       body: Container(
         margin: EdgeInsets.only(top: 20.0),
-        color: Color(0xFF0A0A2A),
-        child: KlineView(
-          dataList: dataList,
+        child: Column(
+          children: <Widget>[
+            KlineView(
+              dataList: dataList,
+            ),
+          ]
         ),
       ),
     );

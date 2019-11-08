@@ -23,13 +23,22 @@ class ChartModel {
   void setRightEndX(double rightEndX) {
     this.rightEndX = rightEndX;
   }
+
+  double closeY;
+  double openY;
+  void setCloseY(double closeY) {
+    this.closeY = closeY;
+  }
+  void setOpenY(double openY) {
+    this.openY = openY;
+  }
+
   ///MA
   double priceMA5;
   double priceMA10;
   double priceMA30;
   double volumeMA5;
   double volumeMA10;
-  double volumeMA30;
   // price MA
   void setPriceMA5(double priceMA5) {
     this.priceMA5 = priceMA5;
@@ -46,8 +55,5 @@ class ChartModel {
   }
   void setVolumeMA10(double volumeMA10) {
     this.volumeMA10 = volumeMA10;
-  }
-  void setVolumeMA30(double volumeMA30) {
-    this.volumeMA30 = volumeMA30;
   }
 }

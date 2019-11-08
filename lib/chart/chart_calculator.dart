@@ -10,6 +10,7 @@ class ChartCalculator {
   static int _day30 = 30;
   double bezierRatio = 0.16;
   static List<ChartModel> _cacheList = List();
+
   /// MA
   void calculateMa(List<ChartModel> dataList, bool isEndData) {
     if (dataList == null || dataList.isEmpty) {
@@ -63,14 +64,20 @@ class ChartCalculator {
     return total / dataList.length;
   }
   /// BOLL
-  void calculateBoll() {}
+  void calculateBoll(List<ChartModel> dataList) {
+    if (dataList == null || dataList.isEmpty) {
+      return;
+    }
+  }
   /// MACD
   void calculateMACD(List<ChartModel> dataList) {
     if (dataList == null || dataList.isEmpty) {
       return;
     }
   }
+  /// KDJ
   void calculateKDJ() {}
+  /// RSI
   void calculateRSI() {}
   /// third stage bezier path point
   void setBezierPath(List<Pointer> pointList, Path path) {

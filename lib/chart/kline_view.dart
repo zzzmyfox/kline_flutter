@@ -126,6 +126,7 @@ class _KlineViewState extends State<KlineView> {
   }
   /// scale
   void onScale(ScaleUpdateDetails details) {
+    print(details.focalPoint.dx);
     if (details.scale > 1) {
       if (_maxViewDataNum <= _viewDataMin) {
         _maxViewDataNum = _viewDataMin;
@@ -134,6 +135,8 @@ class _KlineViewState extends State<KlineView> {
         _startDataNum = _totalDataList.length - _maxViewDataNum;
       } else if (_viewDataList[_viewDataList.length - 1].rightEndX / 2 > details.focalPoint.dx) {
         _maxViewDataNum -= 2;
+      } else if (_viewDataList[_viewDataList.length - 1].rightEndX / 2 <= details.focalPoint.dx) {
+
       }
       else {
         _maxViewDataNum -= 2;
@@ -162,9 +165,11 @@ class _KlineViewState extends State<KlineView> {
   void moveGestureDetector(DragUpdateDetails details) {
     double _distanceX = details.delta.dx * -1;
     if ((_startDataNum == 0 && _distanceX < 0)
-        || (_startDataNum == _totalDataList.length - 1 - _maxViewDataNum && _distanceX > 0)
+        || (_startDataNum == _totalDataList.length - _maxViewDataNum && _distanceX > 0)
         || _startDataNum < 0
         || _viewDataList.length < _maxViewDataNum) {
+
+      print(11);
       if (_isShowDetail) {
         setState(() {
           _isShowDetail = false;
@@ -184,11 +189,12 @@ class _KlineViewState extends State<KlineView> {
   }
   /// move data
   void moveData(double distanceX) {
-    if (_maxViewDataNum < 60) {
+    if (_maxViewDataNum < 100) {
       setSpeed(distanceX, 10);
     } else {
       setSpeed(distanceX, 3.5);
     }
+
     if (_startDataNum < 0) {
       _startDataNum = 0;
     }
@@ -200,16 +206,16 @@ class _KlineViewState extends State<KlineView> {
   /// move speed
   void setSpeed(double distanceX, double num) {
     if (distanceX.abs() > 1 && distanceX.abs() < 2) {
-      _startDataNum += ((distanceX * 20) % 2).round();
+      _startDataNum += (distanceX * 10- (distanceX * 10 ~/ 2) * 2).round();
     } else if (distanceX.abs() < 10) {
-      _startDataNum += (distanceX * 20 % 2).round();
+    _startDataNum += (distanceX - (distanceX ~/ 2) * 2).toInt();
     } else {
       _startDataNum += distanceX ~/ num;
     }
   }
   /// move velocity
   void moveVelocity(DragEndDetails details) {
-    if (_startDataNum > 0 && _startDataNum < _totalDataList.length - 1 - _maxViewDataNum) {
+    if (_startDataNum > 0 && _startDataNum < _totalDataList.length - _maxViewDataNum) {
       if (details.velocity.pixelsPerSecond.dx > 6000) {
         _velocityX = 8000;
       } else if (details.velocity.pixelsPerSecond.dx  < -6000) {
@@ -235,8 +241,8 @@ class _KlineViewState extends State<KlineView> {
         _startDataNum++;
       }
       _velocityX += 200;
-      if (_startDataNum > _totalDataList.length - _maxViewDataNum - 1) {
-        _startDataNum = _totalDataList.length - _maxViewDataNum - 1;
+      if (_startDataNum > _totalDataList.length - _maxViewDataNum) {
+        _startDataNum = _totalDataList.length - _maxViewDataNum;
       }
     } else if (_velocityX > 200) {
       if (_velocityX > 6000) {

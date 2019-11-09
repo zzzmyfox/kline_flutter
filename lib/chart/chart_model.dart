@@ -17,22 +17,20 @@ class ChartModel {
   ///Main chart view
   double leftStartX;
   double rightEndX;
+  double closeY;
+  double openY;
   void setLeftStartX(double leftStartX) {
     this.leftStartX = leftStartX;
   }
   void setRightEndX(double rightEndX) {
     this.rightEndX = rightEndX;
   }
-
-  double closeY;
-  double openY;
   void setCloseY(double closeY) {
     this.closeY = closeY;
   }
   void setOpenY(double openY) {
     this.openY = openY;
   }
-
   ///MA
   double priceMA5;
   double priceMA10;
@@ -56,4 +54,6 @@ class ChartModel {
   void setVolumeMA10(double volumeMA10) {
     this.volumeMA10 = volumeMA10;
   }
+  /// BOLL
+
 }

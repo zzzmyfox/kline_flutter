@@ -13,25 +13,25 @@ class KlineView extends StatefulWidget {
   });
   final List<ChartModel> dataList;
 
-
   @override
   _KlineViewState createState() => _KlineViewState();
 }
 
 class _KlineViewState extends State<KlineView> {
 
+  int _startDataNum = 0;
+  int _maxViewDataNum = 50;
+  int _viewDataMin = 10;
+  int _viewDataMax = 100;
+
   List<ChartModel> _totalDataList = List();
   List<ChartModel> _viewDataList = List();
   List<String> _detailDataList = List();
-  int _maxViewDataNum = 30;
-  int _startDataNum = 0;
   bool _isShowDetail = false;
   ChartModel _lastData;
   double _velocityX;
   ChartCalculator _chartCalculator = ChartCalculator();
   ChartUtils _chartUtils = ChartUtils();
-  int _viewDataMin = 10;
-  int _viewDataMax = 80;
 
   @override
   void initState() {
@@ -39,7 +39,6 @@ class _KlineViewState extends State<KlineView> {
     super.initState();
     initDataList();
   }
-
   /// init data list
   void initDataList() {
     _totalDataList.clear();
@@ -125,24 +124,24 @@ class _KlineViewState extends State<KlineView> {
     }
   }
   /// scale
-  void onScale(ScaleUpdateDetails details) {
-    print(details.focalPoint.dx);
+  void onScaleUpdate(ScaleUpdateDetails details) {
     if (details.scale > 1) {
       if (_maxViewDataNum <= _viewDataMin) {
         _maxViewDataNum = _viewDataMin;
       } else if (_viewDataList.length < _maxViewDataNum) {
         _maxViewDataNum -= 2;
         _startDataNum = _totalDataList.length - _maxViewDataNum;
-      } else if (_viewDataList[_viewDataList.length - 1].rightEndX / 2 > details.focalPoint.dx) {
-        _maxViewDataNum -= 2;
-      } else if (_viewDataList[_viewDataList.length - 1].rightEndX / 2 <= details.focalPoint.dx) {
-
       }
+//      } else if (_viewDataList[_viewDataList.length - 1].rightEndX / 2 > details.focalPoint.dx) {
+//        _maxViewDataNum -= 2;
+//      } else if (_viewDataList[_viewDataList.length - 1].rightEndX / 2 <= details.focalPoint.dx) {
+//
+//      }
       else {
         _maxViewDataNum -= 2;
         _startDataNum += 1;
       }
-    } else {
+    } else if (details.scale < 1){
       if (_maxViewDataNum >= _viewDataMax) {
         _maxViewDataNum = _viewDataMax;
       } else if (_startDataNum + _maxViewDataNum >= _totalDataList.length) {
@@ -157,19 +156,17 @@ class _KlineViewState extends State<KlineView> {
       }
     }
     setState(() {
+      _isShowDetail = false;
        _resetViewData();
      });
   }
-
-  /// gesture
+  /// horizontal gesture
   void moveGestureDetector(DragUpdateDetails details) {
     double _distanceX = details.delta.dx * -1;
     if ((_startDataNum == 0 && _distanceX < 0)
         || (_startDataNum == _totalDataList.length - _maxViewDataNum && _distanceX > 0)
         || _startDataNum < 0
         || _viewDataList.length < _maxViewDataNum) {
-
-      print(11);
       if (_isShowDetail) {
         setState(() {
           _isShowDetail = false;
@@ -182,19 +179,20 @@ class _KlineViewState extends State<KlineView> {
       setState(() {
         _isShowDetail = false;
         if (_distanceX.abs() > 1) {
-            moveData(_distanceX);
+          moveData(_distanceX);
         }
       });
     }
   }
   /// move data
   void moveData(double distanceX) {
-    if (_maxViewDataNum < 100) {
+    if (_maxViewDataNum < 50) {
       setSpeed(distanceX, 10);
+      print(111);
     } else {
       setSpeed(distanceX, 3.5);
+      print(222);
     }
-
     if (_startDataNum < 0) {
       _startDataNum = 0;
     }
@@ -206,7 +204,7 @@ class _KlineViewState extends State<KlineView> {
   /// move speed
   void setSpeed(double distanceX, double num) {
     if (distanceX.abs() > 1 && distanceX.abs() < 2) {
-      _startDataNum += (distanceX * 10- (distanceX * 10 ~/ 2) * 2).round();
+      _startDataNum += (distanceX * 10 - (distanceX * 10 ~/ 2) * 2).round();
     } else if (distanceX.abs() < 10) {
     _startDataNum += (distanceX - (distanceX ~/ 2) * 2).toInt();
     } else {
@@ -271,30 +269,29 @@ class _KlineViewState extends State<KlineView> {
       Future.delayed(Duration(milliseconds: 15), ()=> moveAnimation());
     }
   }
-  ///
+  /// build kline chart
   @override
   Widget build(BuildContext context) {
-    ///
+    /// painter
     CustomPaint klineView = CustomPaint(painter: ChartPainter(
-        viewDataList: _viewDataList,
-        maxViewDataNum: _maxViewDataNum,
-        lastData: _lastData,
-        detailDataList: _detailDataList,
-        isShowDetails: _isShowDetail
-    ));
-    ///
+          viewDataList: _viewDataList,
+          maxViewDataNum: _maxViewDataNum,
+          lastData: _lastData,
+          detailDataList: _detailDataList,
+          isShowDetails: _isShowDetail,));
+    /// gestures
     return GestureDetector(
-      onTapDown: onTapDown,
-      onLongPressMoveUpdate: onLongPress,
-      onHorizontalDragUpdate: moveGestureDetector,
-      onHorizontalDragEnd: moveVelocity,
-      onScaleUpdate: onScale,
-      child: Container(
-        color: Color(0xFF0A0A2A),
-        width: MediaQuery.of(context).size.width,
-        height: 368.0,
-        child: klineView,
-      ),
-    );
+        onTapDown: onTapDown,
+        onLongPressMoveUpdate: onLongPress,
+        onHorizontalDragUpdate: moveGestureDetector,
+        onHorizontalDragEnd: moveVelocity,
+        onScaleUpdate: onScaleUpdate,
+        child: Container(
+          color: Color(0xFF101928),
+          width: MediaQuery.of(context).size.width,
+          height: 368.0,
+          child: klineView,
+        ),
+      );
   }
 }

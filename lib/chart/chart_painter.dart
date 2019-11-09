@@ -24,8 +24,6 @@ class ChartPainter extends CustomPainter {
   final bool isShowSubView;
   /// painter
   Paint _paint = Paint();
-  ///show subview
-
   ///xy value list from scale lines
   List<double> _verticalXList = List();
   List<double> _horizontalYList = List();
@@ -99,7 +97,7 @@ class ChartPainter extends CustomPainter {
     resetPaintStyle(color: scaleLineColor, strokeWidth: 0.2, paintingStyle: PaintingStyle.fill);
     //vertical scale line
     _verticalXList.clear();
-    double _horizontalSpace = (_rightEnd - _leftStart - dp2px(28.0)) / 4;
+    double _horizontalSpace = (_rightEnd - _leftStart - dp2px(15)) / 4;
     for (int i = 0; i < 5; i++) {
       canvas.drawLine(
           Offset(
@@ -108,7 +106,7 @@ class ChartPainter extends CustomPainter {
           ),
           Offset(
               _leftStart + _horizontalSpace * i,
-              _bottomEnd - dp2px(10.0)
+              _bottomEnd - dp2px(6.0)
           ),
           _paint
       );
@@ -116,7 +114,7 @@ class ChartPainter extends CustomPainter {
     }
     //horizontal scale line
     _horizontalYList.clear();
-    _verticalSpace = (_bottomEnd - _topStart - dp2px(10.0)) / 5;
+    _verticalSpace = (_bottomEnd - _topStart - dp2px(6.0)) / 5;
     double _horizontalRightEnd;
     for (int i = 0; i < 6; i++) {
       if (i == 0 || i == 5 || i == 4 || (isShowSubView && i == 3)) {
@@ -138,7 +136,7 @@ class ChartPainter extends CustomPainter {
       _horizontalYList.add(_topStart + _verticalSpace * i);
     }
     //subview's top line
-    _subViewTopY = _horizontalYList[4] + dp2px(12.0);
+    _subViewTopY = _horizontalYList[4] + dp2px(5.0);
     double dx = _verticalXList[_verticalXList.length - 1];
     double dy =  _horizontalYList[4] + _verticalSpace / 2;
     canvas.drawLine(Offset(_leftStart, dy), Offset(dx, dy), _paint);
@@ -210,9 +208,9 @@ class ChartPainter extends CustomPainter {
       viewDataList[i].setOpenY(_horizontalYList[0] + (_topPrice - _openPrice) * _perPriceRectHeight);
       // price rect
       Rect priceRect = Rect.fromLTRB(
-          viewDataList[i].leftStartX + dp2px(0.5),
+          viewDataList[i].leftStartX + dp2px(0.2),
           _maxPriceY + (_maxPrice - _higherPrice) * _perPriceRectHeight,
-          viewDataList[i].rightEndX - dp2px(0.5),
+          viewDataList[i].rightEndX - dp2px(0.2),
           _maxPriceY + (_maxPrice - _lowerPrice) * _perPriceRectHeight
       );
       canvas.drawRect(priceRect, _paint);
@@ -230,9 +228,9 @@ class ChartPainter extends CustomPainter {
       );
       // volume rect
       Rect volumeRect = Rect.fromLTRB(
-          viewDataList[i].leftStartX + dp2px(0.5),
+          viewDataList[i].leftStartX + dp2px(0.2),
           _volumeChartBottom - viewDataList[i].volume * _perVolumeRectHeight,
-          viewDataList[i].rightEndX - dp2px(0.5),
+          viewDataList[i].rightEndX - dp2px(0.2),
           _volumeChartBottom
       );
       canvas.drawRect(volumeRect, _paint);
@@ -715,7 +713,6 @@ class ChartPainter extends CustomPainter {
     double scale = window.devicePixelRatio;
     return dp * scale;
   }
-
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     // TODO: implement shouldRepaint

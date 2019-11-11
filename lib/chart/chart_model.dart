@@ -55,5 +55,55 @@ class ChartModel {
     this.volumeMA10 = volumeMA10;
   }
   /// BOLL
-
+  double bollMB;
+  double bollUP;
+  double bollDN;
+  void setBollMB (double bollMB) {
+    this.bollMB = bollMB;
+  }
+  void setBollUP (double bollUP) {
+    this.bollUP = bollUP;
+  }
+  void setBollDN (double bollDN) {
+    this.bollDN = bollDN;
+  }
+  /// MACD
+  double macd;
+  double dea;
+  double dif;
+  void setMACD(double macd) {
+    this.macd = macd;
+  }
+  void setDEA(double dea) {
+    this.dea = dea;
+  }
+  void setDIF(double dif) {
+    this.dif = dif;
+  }
+  /// KDJ
+  double k;
+  double d;
+  double j;
+  void setK(double k) {
+    this.k = k;
+  }
+  void setD(double d) {
+    this.d = d;
+  }
+  void setJ(double j) {
+    this.j = j;
+  }
+  /// RSI
+  double rs1;
+  double rs2;
+  double rs3;
+  void setRS1(double rs1) {
+    this.rs1 = rs1;
+  }
+  void setRS2(double rs2) {
+    this.rs2 = rs2;
+  }
+  void setRS3(double rs3) {
+    this.rs3 = rs3;
+  }
 }

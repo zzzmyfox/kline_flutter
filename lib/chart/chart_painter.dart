@@ -2,8 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:kchart/chart/chart_calculator.dart';
 import 'package:kchart/chart/chart_model.dart';
-import 'package:kchart/main.dart';
-
 import 'Pointer.dart';
 
 class ChartPainter extends CustomPainter {
@@ -13,7 +11,9 @@ class ChartPainter extends CustomPainter {
     this.lastData,
     this.detailDataList,
     this.isShowDetails: false,
-    this.isShowSubView: false,
+    this.isShowSubview: true,
+    this.viewType:0,
+    this.subviewType:0,
   });
   ///data list
   final List<ChartModel> viewDataList;
@@ -21,7 +21,9 @@ class ChartPainter extends CustomPainter {
   final List<String> detailDataList;
   final ChartModel lastData;
   final bool isShowDetails;
-  final bool isShowSubView;
+  final bool isShowSubview;
+  final int viewType;
+  final int subviewType;
   /// painter
   Paint _paint = Paint();
   ///xy value list from scale lines
@@ -58,12 +60,30 @@ class ChartPainter extends CustomPainter {
   double _topPrice;
   double _botPrice;
   ///
+  double _maxMACD;
+  double _minMACD;
+  double _perMACDHeight;
+  double _subviewCenterY;
+  double _perDEAHeight;
+  double _perDifHeight;
+  /// kdj
+  double  _maxK;
+  double _kHeight;
+  double _dHeight;
+  double _jHeight;
+  /// rsi
+  double _rsiHeight;
+  ///
   ChartCalculator _chartCalculator = ChartCalculator();
   List<Pointer> mainMa5PointList = List();
   List<Pointer> mainMa10PointList = List();
   List<Pointer> mainMa30PointList = List();
   List<Pointer> volumeMa5PointList = List();
   List<Pointer> volumeMa10PointList = List();
+  List<Pointer> subviewMA5List = List();
+  List<Pointer> subviewMA10List = List();
+  List<Pointer> subviewMA30List = List();
+
   Path path = Path();
   /// draw
   @override
@@ -117,7 +137,7 @@ class ChartPainter extends CustomPainter {
     _verticalSpace = (_bottomEnd - _topStart - dp2px(6.0)) / 5;
     double _horizontalRightEnd;
     for (int i = 0; i < 6; i++) {
-      if (i == 0 || i == 5 || i == 4 || (isShowSubView && i == 3)) {
+      if (i == 0 || i == 5 || i == 4 || (isShowSubview && i == 3)) {
         _horizontalRightEnd = _rightEnd;
       } else {
         _horizontalRightEnd = _verticalXList[_verticalXList.length - 1];
@@ -136,12 +156,12 @@ class ChartPainter extends CustomPainter {
       _horizontalYList.add(_topStart + _verticalSpace * i);
     }
     //subview's top line
-    _subViewTopY = _horizontalYList[4] + dp2px(5.0);
+    _subViewTopY = _horizontalYList[4] + dp2px(10.0);
     double dx = _verticalXList[_verticalXList.length - 1];
     double dy =  _horizontalYList[4] + _verticalSpace / 2;
     canvas.drawLine(Offset(_leftStart, dy), Offset(dx, dy), _paint);
     //value's middle scale line
-    if (isShowSubView) {
+    if (isShowSubview) {
       double dx = _verticalXList[_verticalXList.length - 1];
       double dy = _horizontalYList[3] + _verticalSpace / 2;
       canvas.drawLine(Offset(_leftStart, dy), Offset(dx, dy), _paint);
@@ -155,6 +175,16 @@ class ChartPainter extends CustomPainter {
      _maxPrice = viewDataList[0].maxPrice;
      _minPrice = viewDataList[0].minPrice;
      _maxVolume = viewDataList[0].volume;
+     _maxMACD = viewDataList[0].macd;
+     _minMACD = viewDataList[0].macd;
+     double maxDEA = viewDataList[0].dea;
+     double minDEA = viewDataList[0].dea;
+     double maxDIF = viewDataList[0].dif;
+     double minDIF = viewDataList[0].dif;
+     _maxK = viewDataList[0].k;
+     double maxD = viewDataList[0].d;
+     double maxJ = viewDataList[0].j;
+
     for (int i = 0; i < viewDataList.length; i++) {
       viewDataList[i].setLeftStartX(_verticalXList[_verticalXList.length - 1] - (viewDataList.length - i) * _perPriceRectWidth);
       viewDataList[i].setRightEndX(_verticalXList[_verticalXList.length - 1] - (viewDataList.length - i - 1) * _perPriceRectWidth);
@@ -172,11 +202,42 @@ class ChartPainter extends CustomPainter {
       if (viewDataList[i].volume >= _maxVolume) {
         _maxVolume = viewDataList[i].volume;
       }
+
+      if (isShowSubview && subviewType == 0) {
+        if (viewDataList[i].macd >= _maxMACD) {
+          _maxMACD = viewDataList[i].macd;
+        }
+        if (viewDataList[i].macd <= _minMACD) {
+          _minMACD = viewDataList[i].macd;
+        }
+        if (viewDataList[i].dea >= maxDEA) {
+          maxDEA = viewDataList[i].dea;
+        }
+        if (viewDataList[i].dea <= minDEA) {
+          minDEA = viewDataList[i].dea;
+        }
+        if (viewDataList[i].dif >= maxDIF) {
+          maxDIF = viewDataList[i].dif;
+        }
+        if (viewDataList[i].dif <= minDIF) {
+          minDIF = viewDataList[i].dif;
+        }
+      } else if (isShowSubview && subviewType == 1) {
+        if (viewDataList[i].k >= _maxK) {
+          _maxK =  viewDataList[i].k;
+        }
+        if (viewDataList[i].d >= maxD) {
+          maxD =  viewDataList[i].d;
+        }
+        if (viewDataList[i].j >= maxJ) {
+          maxJ =  viewDataList[i].j;
+        }
+      }
     }
     _topPrice = _maxPrice + (_maxPrice - _minPrice) * 0.1;
     _botPrice = _minPrice - (_maxPrice - _minPrice) * 0.1;
      //show the subview
-     if (!isShowSubView) {
+     if (!isShowSubview) {
        _priceChartBottom = _horizontalYList[4];
        _volumeChartBottom = _horizontalYList[5];
      } else {
@@ -189,6 +250,43 @@ class ChartPainter extends CustomPainter {
      _minPriceY = _horizontalYList[0] + (_topPrice - _minPrice) * _perPriceRectHeight;
     //volume data
     _perVolumeRectHeight = (_horizontalYList[_horizontalYList.length - 1] - _subViewTopY) / _maxVolume;
+    // subview
+    if (isShowSubview && subviewType == 0) {
+      // macd
+      if (_maxMACD > 0 && _minMACD < 0) {
+        _perMACDHeight = (_horizontalYList[_horizontalYList.length - 1] - _subViewTopY) / (_maxMACD - _minMACD).abs();
+        _subviewCenterY = _subViewTopY + _maxMACD * _perMACDHeight;
+      } else if (_maxMACD <= 0) {
+        _perMACDHeight = (_horizontalYList[_horizontalYList.length - 1] - _subViewTopY) / _minMACD.abs();
+        _subviewCenterY = _subViewTopY;
+      } else if (_maxMACD >= 0) {
+        _perMACDHeight = (_horizontalYList[_horizontalYList.length - 1] - _subViewTopY) / _maxMACD.abs();
+        _subviewCenterY = _horizontalYList[_horizontalYList.length - 1];
+      }
+      //dea
+      if (maxDEA > 0 && minDEA < 0) {
+        _perDEAHeight = (_horizontalYList[_horizontalYList.length - 1] - _subViewTopY) / (maxDEA - minDEA);
+      } else if (maxDEA <= 0) {
+        _perDEAHeight = (_horizontalYList[_horizontalYList.length - 1] - _subViewTopY) / minDEA.abs();
+      } else if (minDEA >= 0) {
+        _perDEAHeight = (_horizontalYList[_horizontalYList.length - 1] - _subViewTopY) / maxDEA.abs();
+      }
+      //dif
+      if (maxDIF > 0 && minDIF < 0) {
+        _perDifHeight = (_horizontalYList[_horizontalYList.length - 1] - _subViewTopY) / (maxDIF - minDIF);
+      } else if (maxDIF <= 0) {
+        _perDifHeight = (_horizontalYList[_horizontalYList.length - 1] - _subViewTopY) / minDEA.abs();
+      } else if (minDIF >= 0) {
+        _perDifHeight = (_horizontalYList[_horizontalYList.length - 1] - _subViewTopY) / maxDIF.abs();
+      }
+    } else if (isShowSubview && subviewType == 1) {
+      _kHeight = (_horizontalYList[_horizontalYList.length - 1] - _subViewTopY) / _maxK;
+      _dHeight = (_horizontalYList[_horizontalYList.length - 1] - _subViewTopY) / maxD;
+      _jHeight = (_horizontalYList[_horizontalYList.length - 1] - _subViewTopY) / maxJ;
+    } else if (isShowSubview && subviewType == 2) {
+      _rsiHeight = (_horizontalYList[_horizontalYList.length - 1] - _subViewTopY) / 100;
+    }
+
     for (int i = 0; i < viewDataList.length; i++) {
       double _openPrice = viewDataList[i].openPrice;
       double _closePrice = viewDataList[i].closePrice;
@@ -203,7 +301,6 @@ class ChartPainter extends CustomPainter {
         _lowerPrice = _openPrice;
         resetPaintStyle(color: riseColor, paintingStyle: PaintingStyle.fill);
       }
-
       viewDataList[i].setCloseY(_horizontalYList[0] + (_topPrice - _closePrice) * _perPriceRectHeight);
       viewDataList[i].setOpenY(_horizontalYList[0] + (_topPrice - _openPrice) * _perPriceRectHeight);
       // price rect
@@ -234,6 +331,22 @@ class ChartPainter extends CustomPainter {
           _volumeChartBottom
       );
       canvas.drawRect(volumeRect, _paint);
+      // macd
+      double w = (viewDataList[i].leftStartX + viewDataList[i].rightEndX) / 2;
+      if (isShowSubview && subviewType == 0) {
+        double macd = viewDataList[i].macd;
+        if (macd > 0) {
+          resetPaintStyle(color: riseColor);
+          canvas.drawLine(
+              Offset(w, _subviewCenterY - macd * _perMACDHeight),
+              Offset(w, _subviewCenterY), _paint);
+        } else {
+          resetPaintStyle(color: fallColor);
+          canvas.drawLine(
+              Offset(w, _subviewCenterY),
+              Offset(w, _subviewCenterY + macd.abs() * _perMACDHeight), _paint);
+        }
+      }
     }
   }
   /// draw bezier line
@@ -243,6 +356,10 @@ class ChartPainter extends CustomPainter {
     mainMa30PointList.clear();
     volumeMa5PointList.clear();
     volumeMa10PointList.clear();
+    subviewMA5List.clear();
+    subviewMA10List.clear();
+    subviewMA30List.clear();
+
     for (int i = 0; i < viewDataList.length; i++) {
       // volume
       Pointer volumeMa5Pointer = Pointer();
@@ -257,28 +374,117 @@ class ChartPainter extends CustomPainter {
         volumeMa10Pointer.setY(_volumeChartBottom - viewDataList[i].volumeMA10 * _perVolumeRectHeight);
         volumeMa10PointList.add(volumeMa10Pointer);
       }
-      // price
-      Pointer priceMa5Pointer = Pointer();
-      if (viewDataList[i].priceMA5 != null) {
-        priceMa5Pointer.setX(viewDataList[i].leftStartX);
-        priceMa5Pointer.setY(_maxPriceY + (_maxPrice - viewDataList[i].priceMA5) * _perPriceRectHeight);
-        mainMa5PointList.add(priceMa5Pointer);
+      switch (viewType) {
+        case 0:
+        // price
+          Pointer priceMa5Pointer = Pointer();
+          if (viewDataList[i].priceMA5 != null) {
+            priceMa5Pointer.setX(viewDataList[i].leftStartX);
+            priceMa5Pointer.setY(_maxPriceY + (_maxPrice - viewDataList[i].priceMA5) * _perPriceRectHeight);
+            mainMa5PointList.add(priceMa5Pointer);
+          }
+          Pointer priceMa10Pointer = Pointer();
+          if (viewDataList[i].priceMA10 != null) {
+            priceMa10Pointer.setX(viewDataList[i].leftStartX);
+            priceMa10Pointer.setY(_maxPriceY + (_maxPrice - viewDataList[i].priceMA10) * _perPriceRectHeight);
+            mainMa10PointList.add(priceMa10Pointer);
+          }
+          Pointer priceMa30Pointer = Pointer();
+          if (viewDataList[i].priceMA30 != null) {
+            priceMa30Pointer.setX(viewDataList[i].leftStartX);
+            priceMa30Pointer.setY(_maxPriceY + (_maxPrice - viewDataList[i].priceMA30) * _perPriceRectHeight);
+            mainMa30PointList.add(priceMa30Pointer);
+          }
+          break;
+        case 1:
+          Pointer bollMBPointer = Pointer();
+          if (viewDataList[i].bollMB != null) {
+            bollMBPointer.setX(viewDataList[i].leftStartX);
+            bollMBPointer.setY(_maxPriceY + (_maxPrice - viewDataList[i].bollMB) * _perPriceRectHeight);
+            mainMa5PointList.add(bollMBPointer);
+          }
+          Pointer bollUPPointer = Pointer();
+          if (viewDataList[i].bollUP != null) {
+            bollUPPointer.setX(viewDataList[i].leftStartX);
+            bollUPPointer.setY(_maxPriceY + (_maxPrice - viewDataList[i].bollUP) * _perPriceRectHeight);
+            mainMa10PointList.add(bollUPPointer);
+          }
+          Pointer bollDNPointer = Pointer();
+          if (viewDataList[i].bollDN  != null) {
+            bollDNPointer.setX(viewDataList[i].leftStartX);
+            bollDNPointer.setY(_maxPriceY + (_maxPrice - viewDataList[i].bollDN) * _perPriceRectHeight);
+            mainMa30PointList.add(bollDNPointer);
+          }
+          break;
+        case 2:
+          break;
       }
-      Pointer priceMa10Pointer = Pointer();
-      if (viewDataList[i].priceMA10 != null) {
-        priceMa10Pointer.setX(viewDataList[i].leftStartX);
-        priceMa10Pointer.setY(_maxPriceY + (_maxPrice - viewDataList[i].priceMA10) * _perPriceRectHeight);
-        mainMa10PointList.add(priceMa10Pointer);
-      }
-      Pointer priceMa30Pointer = Pointer();
-      if (viewDataList[i].priceMA30 != null) {
-        priceMa30Pointer.setX(viewDataList[i].leftStartX);
-        priceMa30Pointer.setY(_maxPriceY + (_maxPrice - viewDataList[i].priceMA30) * _perPriceRectHeight);
-        mainMa30PointList.add(priceMa30Pointer);
+
+      if (isShowSubview && subviewType == 0) {
+        Pointer difPoint = Pointer();
+        if (viewDataList[i].dif != null) {
+          difPoint.setX(viewDataList[i].leftStartX + _perPriceRectWidth / 2);
+          difPoint.setY(_subviewCenterY - viewDataList[i].dif * _perDifHeight);
+        } else {
+          difPoint.setX(viewDataList[i].leftStartX + _perPriceRectWidth / 2);
+          difPoint.setY(_subviewCenterY - (viewDataList[i].dif * _perDifHeight).abs());
+        }
+        subviewMA5List.add(difPoint);
+
+        Pointer deaPoint = Pointer();
+        if (viewDataList[i].dif != null) {
+          deaPoint.setX(viewDataList[i].leftStartX + _perPriceRectWidth / 2);
+          deaPoint.setY(_subviewCenterY - viewDataList[i].dea * _perDEAHeight);
+        } else {
+          deaPoint.setX(viewDataList[i].leftStartX + _perPriceRectWidth / 2);
+          deaPoint.setY(_subviewCenterY - viewDataList[i].dea * _perDEAHeight);
+        }
+        subviewMA10List.add(deaPoint);
+      } else if (isShowSubview && subviewType == 1) {
+        Pointer kPoint = Pointer();
+        if (viewDataList[i].k > 0) {
+          kPoint.setX(viewDataList[i].leftStartX + _perPriceRectWidth / 2);
+          kPoint.setY(_horizontalYList[5] - viewDataList[i].k * _kHeight);
+          subviewMA5List.add(kPoint);
+        }
+        Pointer dPoint = Pointer();
+        if (viewDataList[i].d > 0) {
+          dPoint.setX(viewDataList[i].leftStartX + _perPriceRectWidth / 2);
+          dPoint.setY(_horizontalYList[5] - viewDataList[i].d * _dHeight);
+          subviewMA10List.add(dPoint);
+        }
+        Pointer jPoint = Pointer();
+        if (viewDataList[i].j > 0) {
+          jPoint.setX(viewDataList[i].leftStartX + _perPriceRectWidth / 2);
+          jPoint.setY(_horizontalYList[5] - viewDataList[i].j * _jHeight);
+          subviewMA30List.add(jPoint);
+        }
+      } else if (isShowSubview && subviewType == 2) {
+        Pointer rs1Point = Pointer();
+        if (viewDataList[i].rs1 != null) {
+          rs1Point.setX(viewDataList[i].leftStartX + _perPriceRectWidth / 2);
+          rs1Point.setY(_horizontalYList[5] -  viewDataList[i].rs1 * _rsiHeight);
+          subviewMA5List.add(rs1Point);
+        }
+        Pointer rs2Point = Pointer();
+        if (viewDataList[i].rs2 != null) {
+          rs2Point.setX(viewDataList[i].leftStartX + _perPriceRectWidth / 2);
+          rs2Point.setY(_horizontalYList[5] -  viewDataList[i].rs2 * _rsiHeight);
+          subviewMA10List.add(rs2Point);
+        }
+        Pointer rs3Point = Pointer();
+        if (viewDataList[i].rs3 != null) {
+          rs3Point.setX(viewDataList[i].leftStartX + _perPriceRectWidth / 2);
+          rs3Point.setY(_horizontalYList[5] -  viewDataList[i].rs3 * _rsiHeight);
+          subviewMA30List.add(rs3Point);
+        }
       }
     }
     _drawMainBezierCurve(canvas);
     _drawVolumeBezierCurve(canvas);
+    if (isShowSubview) {
+      _drawSubviewCurve(canvas);
+    }
   }
   void _drawMainBezierCurve(Canvas canvas) {
     ///ma5
@@ -302,6 +508,20 @@ class ChartPainter extends CustomPainter {
     // ma 10
     _chartCalculator.setBezierPath(volumeMa10PointList, path);
     resetPaintStyle(color: ma10Color, strokeWidth: 1);
+    canvas.drawPath(path, _paint);
+  }
+  void _drawSubviewCurve(Canvas canvas) {
+    // 5
+    _chartCalculator.setLinePath(subviewMA5List, path);
+    resetPaintStyle(color: ma5Color);
+    canvas.drawPath(path, _paint);
+    // 10
+    _chartCalculator.setLinePath(subviewMA10List, path);
+    resetPaintStyle(color: ma10Color);
+    canvas.drawPath(path, _paint);
+    // 30
+    _chartCalculator.setLinePath(subviewMA30List, path);
+    resetPaintStyle(color: ma30Color);
     canvas.drawPath(path, _paint);
   }
   /// draw max and min price text
@@ -385,7 +605,7 @@ class ChartPainter extends CustomPainter {
       _priceChartBottom - _getTextBounds(_minPriceText).height
     ));
     // average price
-    if (!isShowSubView) {
+    if (!isShowSubview) {
       double avgPrice = (_topPrice - _botPrice) / 4;
       for (int i = 0; i  < 3; i++) {
         String price = setPrecision(_topPrice - avgPrice * (i + 1), 2);
@@ -429,21 +649,35 @@ class ChartPainter extends CustomPainter {
     if (lastData == null) {
       return;
     }
-    String _indexTopTextOne = "MA5:${lastData.priceMA5}";
+    String _indexTopTextOne;
+    String _indexTopTextTwo;
+    String _indexTopTextThree;
+    switch (viewType) {
+      case 0:
+         _indexTopTextOne = "MA5:${lastData.priceMA5}";
+         _indexTopTextTwo = "MA10:${lastData.priceMA10}";
+         _indexTopTextThree = "MA30:${lastData.priceMA30}";
+        break;
+      case 1:
+        _indexTopTextOne = "BOLL:${lastData.bollMB}";
+        _indexTopTextTwo = "UB:${lastData.bollUP}";
+        _indexTopTextThree = "LB:${lastData.bollDN}";
+        break;
+      case 2:
+        break;
+    }
     if (lastData.priceMA5 != null) {
       _drawText(canvas, _indexTopTextOne, ma5Color, Offset(
           _leftStart,
           _topStart - _getTextBounds(_indexTopTextOne).height - 1
       ));
     }
-    String _indexTopTextTwo = "MA10:${lastData.priceMA10}";
     if (lastData.priceMA10 != null) {
       _drawText(canvas, _indexTopTextTwo, ma10Color, Offset(
           _leftStart + _getTextBounds(_indexTopTextOne).width + dp2px(5.0),
           _topStart - _getTextBounds(_indexTopTextOne).height - 1
       ));
     }
-    String _indexTopTextThree = "MA30:${lastData.priceMA30}";
     if (lastData.priceMA30 != null) {
       _drawText(canvas, _indexTopTextThree, ma30Color, Offset(
           _leftStart + _getTextBounds(_indexTopTextOne).width + _getTextBounds(_indexTopTextTwo).width + dp2px(10.0),
@@ -477,6 +711,43 @@ class ChartPainter extends CustomPainter {
           _priceChartBottom
       ));
     }
+
+    String titleText = "";
+    String firstText = "";
+    String secondText = "";
+    String thirdText = "";
+    if (isShowSubview && subviewType == 0) {
+      titleText = "MACD(12,26,9)";
+      firstText = "MACD:"+"${lastData.macd}";
+      secondText = "DIF"+"${lastData.dif}";
+      thirdText = "DEA"+"${lastData.dea}";
+    } else if (isShowSubview && subviewType == 1) {
+      titleText = "KDJ(9,3,3)";
+      firstText = "K:"+"${lastData.k}";
+      secondText = "D:"+"${lastData.d}";
+      thirdText = "J:"+"${lastData.j}";
+    } else if (isShowSubview && subviewType == 2) {
+      titleText = "RSI(6,12,24)";
+      firstText = "RSI1:"+"${lastData.rs1}";
+      secondText = "RSI2:"+"${lastData.rs2}";
+      thirdText = "RSI3:"+"${lastData.rs3}";
+    }
+    _drawText(canvas, titleText, scaleTextColor, Offset(
+      _verticalXList[0],
+      _horizontalYList[4]
+    ));
+    _drawText(canvas, firstText, ma5Color, Offset(
+        _verticalXList[0] + _getTextBounds(titleText).width + dp2px(5),
+        _horizontalYList[4]
+    ));
+    _drawText(canvas, secondText, ma10Color, Offset(
+        _verticalXList[0] + _getTextBounds(titleText).width + _getTextBounds(firstText).width + dp2px(10),
+        _horizontalYList[4]
+    ));
+    _drawText(canvas, thirdText, ma30Color, Offset(
+        _verticalXList[0] + _getTextBounds(titleText).width + _getTextBounds(firstText).width + _getTextBounds(secondText).width + dp2px(15),
+        _horizontalYList[4]
+    ));
   }
   /// draw cross line
   void _drawCrossHairLine(Canvas canvas) {

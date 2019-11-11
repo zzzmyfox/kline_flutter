@@ -7,7 +7,7 @@ import 'package:kchart/chart/chart_painter.dart';
 import 'package:kchart/chart/chart_utils.dart';
 
 class KlineView extends StatefulWidget {
-
+  
   KlineView({
     this.dataList,
   });
@@ -44,11 +44,20 @@ class _KlineViewState extends State<KlineView> {
     _totalDataList.clear();
     _totalDataList.addAll(widget.dataList);
     _startDataNum = _totalDataList.length - _maxViewDataNum;
-    _chartCalculator.calculateMa(_totalDataList, false);
+    _calculateIndex ();
     setState(() {
       _resetViewData();
     });
   }
+
+  Future _calculateIndex () async {
+    _chartCalculator.calculateMa(_totalDataList, false);
+    _chartCalculator.calculateBoll(_totalDataList, 26, 2, false);
+    _chartCalculator.calculateMACD(_totalDataList, 12, 26, 9, false);
+    _chartCalculator.calculateKDJ(_totalDataList, 9, 3, 3, false);
+    _chartCalculator.calculateRSI(_totalDataList, 6, 12, 24, false);
+  }
+
   /// add single data
   void addSingleData() {}
   /// display data
@@ -188,10 +197,8 @@ class _KlineViewState extends State<KlineView> {
   void moveData(double distanceX) {
     if (_maxViewDataNum < 50) {
       setSpeed(distanceX, 10);
-      print(111);
     } else {
       setSpeed(distanceX, 3.5);
-      print(222);
     }
     if (_startDataNum < 0) {
       _startDataNum = 0;

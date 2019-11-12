@@ -7,11 +7,17 @@ import 'package:kchart/chart/chart_painter.dart';
 import 'package:kchart/chart/chart_utils.dart';
 
 class KlineView extends StatefulWidget {
-  
+
   KlineView({
     this.dataList,
+    this.isShowSubview:true,
+    this.viewType:0,
+    this.subviewType:0,
   });
   final List<ChartModel> dataList;
+  final bool isShowSubview;
+  final int viewType;
+  final int subviewType;
 
   @override
   _KlineViewState createState() => _KlineViewState();
@@ -40,7 +46,7 @@ class _KlineViewState extends State<KlineView> {
     initDataList();
   }
   /// init data list
-  void initDataList() {
+  Future initDataList() async {
     _totalDataList.clear();
     _totalDataList.addAll(widget.dataList);
     _startDataNum = _totalDataList.length - _maxViewDataNum;
@@ -285,7 +291,11 @@ class _KlineViewState extends State<KlineView> {
           maxViewDataNum: _maxViewDataNum,
           lastData: _lastData,
           detailDataList: _detailDataList,
-          isShowDetails: _isShowDetail,));
+          isShowDetails: _isShowDetail,
+          isShowSubview: widget.isShowSubview,
+          viewType: widget.viewType,
+          subviewType: widget.subviewType,
+    ));
     /// gestures
     return GestureDetector(
         onTapDown: onTapDown,

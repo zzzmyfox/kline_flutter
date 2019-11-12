@@ -5,7 +5,6 @@ class ChartUtils {
     List<String> date = dateList[0].toString().split("-");
     List<String> time = dateList[1].toString().split(":");
     String format = "${date[1]}-${date[2]} ${time[0]}:${time[1]}";
-
     if (year??false) {
       format = "${date[0]}-${date[1]}-${date[2]} ${time[0]}:${time[1]}";
     }

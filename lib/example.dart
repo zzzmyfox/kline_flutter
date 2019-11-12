@@ -38,7 +38,38 @@ class _ExampleState extends State<Example> {
 
   bool _isShowMenu = false;
   bool _isShowView = false;
-  bool _isShowsubview = false;
+  bool _isShowSubview = false;
+
+  int _viewTypeIndex = 0;
+  void viewType(int type) {
+    switch (type) {
+      case 0:
+        _viewTypeIndex = 0;
+        break;
+      case 1:
+        _viewTypeIndex = 1;
+        break;
+      case 2:
+        _viewTypeIndex = 2;
+        break;
+    }
+  }
+
+  int _subviewTypeIndex = 0;
+  void subviewType(int type) {
+    switch (type) {
+      case 0:
+        _subviewTypeIndex = 0;
+        break;
+      case 1:
+        _subviewTypeIndex = 1;
+        break;
+      case 2:
+        _subviewTypeIndex = 2;
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -63,6 +94,7 @@ class _ExampleState extends State<Example> {
               },
               child: Text("菜单", style: TextStyle(color: Colors.white),),
             ),
+
             _isShowMenu ? Container(
               height: 100,
               child: Column(
@@ -71,8 +103,19 @@ class _ExampleState extends State<Example> {
                     children: <Widget>[
                       Text("主图", style: TextStyle(color: text),),
                       Text("|", style: TextStyle(color: Colors.white)),
-                      Text("MA", style: TextStyle(color: text),),
-                      Text("BOLL", style: TextStyle(color: text),),
+                      InkWell(child: Text("MA", style: TextStyle(color: text),), onTap: () {
+                        setState(() {
+                          _isShowView = true;
+                          viewType(0);
+                        });
+
+                      },),
+                      InkWell(child: Text("BOLL", style: TextStyle(color: text),), onTap: () {
+                        setState(() {
+                          _isShowView = true;
+                          viewType(1);
+                        });
+                      },),
                       IconButton(
                         iconSize: 16,
                         icon: _isShowView
@@ -80,10 +123,9 @@ class _ExampleState extends State<Example> {
                             : Icon(Icons.visibility_off, color: Colors.grey),
                         onPressed: () {
                           setState(() {
+                            viewType(2);
                             if (_isShowView) {
                               _isShowView = false;
-                            } else {
-                              _isShowView = true;
                             }
                           });
                         },
@@ -96,27 +138,39 @@ class _ExampleState extends State<Example> {
                       Text("|", style: TextStyle(color: Colors.white)),
                       InkWell(child: Text("MACD", style: TextStyle(color: text),),
                         onTap: () {
+                        setState(() {
+                          setState(() {
+                            _isShowSubview = true;
+                            subviewType(0);
+                          });
+                        });
                         },
                       ),
                       InkWell(child: Text("KDJ", style: TextStyle(color: text),),
                         onTap: () {
+                          setState(() {
+                            _isShowSubview = true;
+                            subviewType(1);
+                          });
                         },
                       ),
                       InkWell(child: Text("RSI", style: TextStyle(color: text),),
                         onTap: () {
+                          setState(() {
+                            _isShowSubview = true;
+                            subviewType(2);
+                          });
                         },
                       ),
                       IconButton(
                         iconSize: 16,
-                        icon: _isShowsubview
+                        icon: _isShowSubview
                             ? Icon(Icons.visibility, color: Colors.grey)
                             : Icon(Icons.visibility_off, color: Colors.grey),
                         onPressed: () {
                           setState(() {
-                            if (_isShowsubview) {
-                              _isShowsubview = false;
-                            } else {
-                              _isShowsubview = true;
+                            if (_isShowSubview) {
+                              _isShowSubview = false;
                             }
                           });
                         },
@@ -127,9 +181,7 @@ class _ExampleState extends State<Example> {
               ),
             ) : Container(),
 
-
-
-            KlineView(dataList: dataList,),
+            KlineView(dataList: dataList, isShowSubview: _isShowSubview, viewType: _viewTypeIndex, subviewType: _subviewTypeIndex,),
             Container(height: 340,),
             Container(
               height: 90,

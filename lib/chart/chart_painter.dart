@@ -11,9 +11,9 @@ class ChartPainter extends CustomPainter {
     this.lastData,
     this.detailDataList,
     this.isShowDetails: false,
-    this.isShowSubview: true,
-    this.viewType:0,
-    this.subviewType:0,
+    this.isShowSubview,
+    this.viewType,
+    this.subviewType,
   });
   ///data list
   final List<ChartModel> viewDataList;
@@ -716,38 +716,65 @@ class ChartPainter extends CustomPainter {
     String firstText = "";
     String secondText = "";
     String thirdText = "";
+
     if (isShowSubview && subviewType == 0) {
       titleText = "MACD(12,26,9)";
-      firstText = "MACD:"+"${lastData.macd}";
-      secondText = "DIF"+"${lastData.dif}";
-      thirdText = "DEA"+"${lastData.dea}";
+      if (lastData.macd != null) {
+        firstText = "MACD:"+"${lastData.macd}";
+      }
+      if (lastData.dif != null) {
+        secondText = "DIF:"+"${lastData.dif}";
+      }
+      if (lastData.dea != null) {
+        thirdText = "DEA:"+"${lastData.dea}";
+      }
     } else if (isShowSubview && subviewType == 1) {
       titleText = "KDJ(9,3,3)";
-      firstText = "K:"+"${lastData.k}";
-      secondText = "D:"+"${lastData.d}";
-      thirdText = "J:"+"${lastData.j}";
+      if (lastData.k != null) {
+        firstText = "K:"+setPrecision(lastData.k, 2);
+      }
+      if (lastData.d != null) {
+        secondText = "D:"+setPrecision(lastData.d, 2);
+      }
+      if (lastData.j != null) {
+        secondText = "D:"+setPrecision(lastData.d, 2);
+      }
     } else if (isShowSubview && subviewType == 2) {
       titleText = "RSI(6,12,24)";
-      firstText = "RSI1:"+"${lastData.rs1}";
-      secondText = "RSI2:"+"${lastData.rs2}";
-      thirdText = "RSI3:"+"${lastData.rs3}";
+      if (lastData.rs1 != null) {
+        firstText = "RSI1:" + setPrecision(lastData.rs1, 2);
+      }
+      if (lastData.rs2 != null) {
+        secondText = "RSI2:" + setPrecision(lastData.rs2, 2);
+      }
+      if (lastData.rs3 != null) {
+        thirdText = "RSI3:" + setPrecision(lastData.rs3, 2);
+      }
     }
     _drawText(canvas, titleText, scaleTextColor, Offset(
       _verticalXList[0],
       _horizontalYList[4]
     ));
-    _drawText(canvas, firstText, ma5Color, Offset(
-        _verticalXList[0] + _getTextBounds(titleText).width + dp2px(5),
-        _horizontalYList[4]
-    ));
-    _drawText(canvas, secondText, ma10Color, Offset(
-        _verticalXList[0] + _getTextBounds(titleText).width + _getTextBounds(firstText).width + dp2px(10),
-        _horizontalYList[4]
-    ));
-    _drawText(canvas, thirdText, ma30Color, Offset(
-        _verticalXList[0] + _getTextBounds(titleText).width + _getTextBounds(firstText).width + _getTextBounds(secondText).width + dp2px(15),
-        _horizontalYList[4]
-    ));
+
+    if (lastData.macd != null ||lastData.k != null ||lastData.rs1  != null) {
+      _drawText(canvas, firstText, ma5Color, Offset(
+          _verticalXList[0] + _getTextBounds(titleText).width + dp2px(5),
+          _horizontalYList[4]
+      ));
+    }
+    if (lastData.dif != null ||lastData.d != null ||lastData.rs2  != null) {
+      _drawText(canvas, secondText, ma10Color, Offset(
+          _verticalXList[0] + _getTextBounds(titleText).width +
+              _getTextBounds(firstText).width + dp2px(10),
+          _horizontalYList[4]
+      ));
+    }
+    if (lastData.dea != null ||lastData.j != null || lastData.rs3  != null) {
+      _drawText(canvas, thirdText, ma30Color, Offset(
+          _verticalXList[0] + _getTextBounds(titleText).width + _getTextBounds(firstText).width + _getTextBounds(secondText).width + dp2px(15),
+          _horizontalYList[4]
+      ));
+    }
   }
   /// draw cross line
   void _drawCrossHairLine(Canvas canvas) {
@@ -955,7 +982,7 @@ class ChartPainter extends CustomPainter {
   }
   /// precision
   String setPrecision(double num, int scale) {
-    return num.toStringAsFixed(scale);
+    return num. toStringAsFixed(scale);
   }
   /// date format
   String dateFormat(int timestamp) {
@@ -984,6 +1011,7 @@ class ChartPainter extends CustomPainter {
     double scale = window.devicePixelRatio;
     return dp * scale;
   }
+
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     // TODO: implement shouldRepaint

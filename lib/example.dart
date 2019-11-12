@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kchart/chart/chart_model.dart';
 import 'package:kchart/chart/kline_view.dart';
 import 'package:kchart/dashboard_widget.dart';
+import 'package:kchart/depth/depth_view.dart';
 
 class Example extends StatefulWidget {
   @override
@@ -180,15 +181,14 @@ class _ExampleState extends State<Example> {
                 ],
               ),
             ) : Container(),
-
             KlineView(dataList: dataList, isShowSubview: _isShowSubview, viewType: _viewTypeIndex, subviewType: _subviewTypeIndex,),
-            Container(height: 340,),
-            Container(
-              height: 90,
-              color: Color(0xFF132940),
-              child: Row(
-              ),
-            )
+            DepthView(),
+//            Container(
+//              height: 90,
+//              color: Color(0xFF132940),
+//              child: Row(
+//              ),
+//            )
           ],
         ),
       ),

@@ -7,10 +7,9 @@ import 'package:kchart/chart/chart_painter.dart';
 import 'package:kchart/chart/chart_utils.dart';
 
 class KlineView extends StatefulWidget {
-
   KlineView({
     this.dataList,
-    this.isShowSubview:true,
+    this.isShowSubview:false,
     this.viewType:0,
     this.subviewType:0,
   });
@@ -18,27 +17,23 @@ class KlineView extends StatefulWidget {
   final bool isShowSubview;
   final int viewType;
   final int subviewType;
-
   @override
   _KlineViewState createState() => _KlineViewState();
 }
 
 class _KlineViewState extends State<KlineView> {
-
   int _startDataNum = 0;
   int _maxViewDataNum = 50;
   int _viewDataMin = 10;
   int _viewDataMax = 100;
-
+  double _velocityX;
+  bool _isShowDetail = false;
+  ChartModel _lastData;
+  ChartCalculator _chartCalculator = ChartCalculator();
+  ChartUtils _chartUtils = ChartUtils();
   List<ChartModel> _totalDataList = List();
   List<ChartModel> _viewDataList = List();
   List<String> _detailDataList = List();
-  bool _isShowDetail = false;
-  ChartModel _lastData;
-  double _velocityX;
-  ChartCalculator _chartCalculator = ChartCalculator();
-  ChartUtils _chartUtils = ChartUtils();
-
   @override
   void initState() {
     // TODO: implement initState
@@ -55,7 +50,9 @@ class _KlineViewState extends State<KlineView> {
       _resetViewData();
     });
   }
-
+  /// add one data
+  void addSingleData() {}
+  /// calculate index
   Future _calculateIndex () async {
     _chartCalculator.calculateMa(_totalDataList, false);
     _chartCalculator.calculateBoll(_totalDataList, 26, 2, false);
@@ -63,9 +60,6 @@ class _KlineViewState extends State<KlineView> {
     _chartCalculator.calculateKDJ(_totalDataList, 9, 3, 3, false);
     _chartCalculator.calculateRSI(_totalDataList, 6, 12, 24, false);
   }
-
-  /// add single data
-  void addSingleData() {}
   /// display data
   void _resetViewData() {
     _viewDataList.clear();
@@ -119,7 +113,7 @@ class _KlineViewState extends State<KlineView> {
     }
   }
   /// tap down
-  void onTapDown (TapDownDetails details) {
+  void _onTapDown (TapDownDetails details) {
     double moveX = details.globalPosition.dx;
     if (_viewDataList[0].leftStartX <= moveX && _viewDataList[_viewDataList.length - 1].rightEndX >= moveX) {
       setState(() {
@@ -129,7 +123,7 @@ class _KlineViewState extends State<KlineView> {
     }
   }
   /// long press move
-  void onLongPress(LongPressMoveUpdateDetails details) {
+  void _onLongPress(LongPressMoveUpdateDetails details) {
     double moveX = details.globalPosition.dx;
     if (_viewDataList[0].leftStartX <= moveX && _viewDataList[_viewDataList.length - 1].rightEndX >= moveX) {
       setState(() {
@@ -139,7 +133,7 @@ class _KlineViewState extends State<KlineView> {
     }
   }
   /// scale
-  void onScaleUpdate(ScaleUpdateDetails details) {
+  void _onScaleUpdate(ScaleUpdateDetails details) {
     if (details.scale > 1) {
       if (_maxViewDataNum <= _viewDataMin) {
         _maxViewDataNum = _viewDataMin;
@@ -176,7 +170,7 @@ class _KlineViewState extends State<KlineView> {
      });
   }
   /// horizontal gesture
-  void moveGestureDetector(DragUpdateDetails details) {
+  void _moveHorizntal(DragUpdateDetails details) {
     double _distanceX = details.delta.dx * -1;
     if ((_startDataNum == 0 && _distanceX < 0)
         || (_startDataNum == _totalDataList.length - _maxViewDataNum && _distanceX > 0)
@@ -194,17 +188,17 @@ class _KlineViewState extends State<KlineView> {
       setState(() {
         _isShowDetail = false;
         if (_distanceX.abs() > 1) {
-          moveData(_distanceX);
+          _moveData(_distanceX);
         }
       });
     }
   }
   /// move data
-  void moveData(double distanceX) {
+  void _moveData(double distanceX) {
     if (_maxViewDataNum < 50) {
-      setSpeed(distanceX, 10);
+      _setSpeed(distanceX, 10);
     } else {
-      setSpeed(distanceX, 3.5);
+      _setSpeed(distanceX, 3.5);
     }
     if (_startDataNum < 0) {
       _startDataNum = 0;
@@ -215,7 +209,7 @@ class _KlineViewState extends State<KlineView> {
     _resetViewData();
   }
   /// move speed
-  void setSpeed(double distanceX, double num) {
+  void _setSpeed(double distanceX, double num) {
     if (distanceX.abs() > 1 && distanceX.abs() < 2) {
       _startDataNum += (distanceX * 10 - (distanceX * 10 ~/ 2) * 2).round();
     } else if (distanceX.abs() < 10) {
@@ -225,7 +219,7 @@ class _KlineViewState extends State<KlineView> {
     }
   }
   /// move velocity
-  void moveVelocity(DragEndDetails details) {
+  void _moveVelocity(DragEndDetails details) {
     if (_startDataNum > 0 && _startDataNum < _totalDataList.length - _maxViewDataNum) {
       if (details.velocity.pixelsPerSecond.dx > 6000) {
         _velocityX = 8000;
@@ -234,11 +228,11 @@ class _KlineViewState extends State<KlineView> {
       } else {
         _velocityX = details.velocity.pixelsPerSecond.dx;
       }
-      moveAnimation();
+      _moveAnimation();
     }
   }
   /// move animation
-  void moveAnimation() {
+  void _moveAnimation() {
     if (_velocityX < -200) {
       if (_velocityX < -6000) {
         _startDataNum += 6;
@@ -279,14 +273,13 @@ class _KlineViewState extends State<KlineView> {
     // stop when velocity less than 200
     if (_velocityX.abs() > 200) {
       // recursion and delayed 15 milliseconds
-      Future.delayed(Duration(milliseconds: 15), ()=> moveAnimation());
+      Future.delayed(Duration(milliseconds: 15), ()=> _moveAnimation());
     }
   }
-  /// build kline chart
-  @override
-  Widget build(BuildContext context) {
-    /// painter
-    CustomPaint klineView = CustomPaint(painter: ChartPainter(
+  /// painter
+  CustomPaint _klineView() {
+    return CustomPaint(
+        painter: ChartPainter(
           viewDataList: _viewDataList,
           maxViewDataNum: _maxViewDataNum,
           lastData: _lastData,
@@ -295,20 +288,25 @@ class _KlineViewState extends State<KlineView> {
           isShowSubview: widget.isShowSubview,
           viewType: widget.viewType,
           subviewType: widget.subviewType,
-    ));
+        )
+    );
+  }
+  /// build kline chart
+  @override
+  Widget build(BuildContext context) {
     /// gestures
     return GestureDetector(
-        onTapDown: onTapDown,
-        onLongPressMoveUpdate: onLongPress,
-        onHorizontalDragUpdate: moveGestureDetector,
-        onHorizontalDragEnd: moveVelocity,
-        onScaleUpdate: onScaleUpdate,
-        child: Container(
-          color: Color(0xFF101928),
-          width: MediaQuery.of(context).size.width,
-          height: 368.0,
-          child: klineView,
-        ),
-      );
+      onTapDown: _onTapDown,
+      onLongPressMoveUpdate: _onLongPress,
+      onHorizontalDragUpdate: _moveHorizntal,
+      onHorizontalDragEnd: _moveVelocity,
+      onScaleUpdate: _onScaleUpdate,
+      child: Container(
+        color: Color(0xFF101928),
+        width: MediaQuery.of(context).size.width,
+        height: 368.0,
+        child: _klineView(),
+      ),
+    );
   }
 }

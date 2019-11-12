@@ -10,7 +10,7 @@ class ChartPainter extends CustomPainter {
     this.maxViewDataNum,
     this.lastData,
     this.detailDataList,
-    this.isShowDetails: false,
+    this.isShowDetails,
     this.isShowSubview,
     this.viewType,
     this.subviewType,
@@ -623,6 +623,44 @@ class ChartPainter extends CustomPainter {
           _horizontalYList[i + 1] - _getTextBounds(price).height / 2
         ));
       }
+      String topSubviewText = "";
+      String centerSubviewText = "";
+      String botSubviewText = "";
+      if (subviewType == 0) {
+        if (_maxMACD > 0 && _minMACD < 0) {
+          topSubviewText = "$_maxMACD";
+          centerSubviewText = "${(_maxMACD - _minMACD) / 2}";
+          botSubviewText = "$_minMACD";
+        } else if (_maxMACD <= 0) {
+          topSubviewText = "0.0";
+          centerSubviewText = "${(_minMACD - _maxMACD) / 2}";
+          botSubviewText = "$_minMACD";
+        } else if (_minMACD >= 0) {
+          topSubviewText = "$_maxMACD";
+          centerSubviewText = "${(_maxMACD - _minMACD) / 2}";
+          botSubviewText = "0";
+        }
+      } else if (subviewType == 1) {
+        topSubviewText = "$_maxK";
+        centerSubviewText = "${_maxK / 2}";
+        botSubviewText = "0.0";
+      } else if (subviewType == 2) {
+        topSubviewText = "100.0";
+        centerSubviewText = "50.0";
+        botSubviewText = "0.0";
+      }
+      _drawText(canvas, topSubviewText, scaleTextColor, Offset(
+        _verticalXList[_verticalXList.length - 1],
+        _horizontalYList[_horizontalYList.length - 2]
+      ));
+      _drawText(canvas, centerSubviewText, scaleTextColor, Offset(
+          _verticalXList[_verticalXList.length - 1],
+          _horizontalYList[_horizontalYList.length - 1] - _verticalSpace / 2 - _getTextBounds(centerSubviewText).height / 2
+      ));
+      _drawText(canvas, botSubviewText, scaleTextColor, Offset(
+          _verticalXList[_verticalXList.length - 1],
+          _horizontalYList[_horizontalYList.length - 1] - _getTextBounds(centerSubviewText).height
+      ));
     }
     /// volume scale text
     // max volume
@@ -737,7 +775,7 @@ class ChartPainter extends CustomPainter {
         secondText = "D:"+setPrecision(lastData.d, 2);
       }
       if (lastData.j != null) {
-        secondText = "D:"+setPrecision(lastData.d, 2);
+        thirdText = "J:"+setPrecision(lastData.j, 2);
       }
     } else if (isShowSubview && subviewType == 2) {
       titleText = "RSI(6,12,24)";
@@ -1011,7 +1049,6 @@ class ChartPainter extends CustomPainter {
     double scale = window.devicePixelRatio;
     return dp * scale;
   }
-
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     // TODO: implement shouldRepaint

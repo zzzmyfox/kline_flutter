@@ -2,21 +2,19 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:kchart/depth/depth_model.dart';
+import 'depth_model.dart';
 
 class DepthPainter extends CustomPainter{
-  DepthPainter(
-      this.dataListBuy,
-      this.dataListSell
-      );
-  final List<DepthModel> dataListBuy;
-  final List<DepthModel> dataListSell;
 
-  List<DepthModel> _buyDataList = List();
-  List<DepthModel>  _sellDataList = List();
+  DepthPainter({
+    this.buyDataList,
+    this.sellDataList,
+  });
+  final List<DepthModel> buyDataList;
+  final List<DepthModel>  sellDataList;
+  ///
   Path _path = Path();
   Paint _paint = Paint();
-
   double _maxVolume;
   /// colors
   Color _textColor = Colors.grey;
@@ -25,68 +23,48 @@ class DepthPainter extends CustomPainter{
   Color _sellLineColor = Color(0xFFFF5442);
   Color _sellBackgroundColor = Color(0x66FF5442);
 
-
-  void setBuyDataList(List<DepthModel> bidsList) {
-    _buyDataList.clear();
-    _buyDataList.addAll(bidsList);
-    _buyDataList.sort();
-    for (int i = _buyDataList.length - 1; i >= 0; i--) {
-      if (i < _buyDataList.length - 1) {
-        _buyDataList[i].setVolume(_buyDataList[i].volume + _buyDataList[i + 1].volume);
-      }
-    }
-  }
-  void setSellDataList(List<DepthModel> asksList) {
-    _sellDataList.clear();
-    _sellDataList.addAll(asksList);
-    _sellDataList.sort();
-    for (int i = 0; i < _sellDataList.length; i++) {
-      if (i > 0) {
-        _sellDataList[i].setVolume(_sellDataList[i].volume + _sellDataList[i - 1].volume);
-      }
-    }
-  }
-
-  void setLayout(Size size) {
+  void _setLayout(Size size) {
     // buy
     double maxBuyVolume;
     double minBuyVolume;
-    if (_buyDataList.isNotEmpty) {
-      maxBuyVolume = _buyDataList[0].volume;
-      minBuyVolume = _buyDataList[_buyDataList.length - 1].volume;
+    if (buyDataList.isNotEmpty) {
+      maxBuyVolume = buyDataList[0].volume;
+      minBuyVolume = buyDataList[buyDataList.length - 1].volume;
     } else {
       maxBuyVolume = minBuyVolume = 0;
     }
     // sell
     double maxSellVolume;
     double minSellVolume;
-    if (_sellDataList.isNotEmpty) {
-      maxSellVolume = _sellDataList[_sellDataList.length - 1].volume;
-      minSellVolume = _sellDataList[0].volume;
+    if (sellDataList.isNotEmpty) {
+      maxSellVolume = sellDataList[sellDataList.length - 1].volume;
+      minSellVolume = sellDataList[0].volume;
     } else {
       maxSellVolume = minSellVolume = 0;
     }
     _maxVolume = max(maxBuyVolume, maxSellVolume);
     double minVolume = min(minBuyVolume, minSellVolume);
+
     double perHeight = size.height / (_maxVolume - minVolume);
-    double perWidth = size.width / (_buyDataList.length + _sellDataList.length);
+    double perWidth = size.width / (buyDataList.length + sellDataList.length);
     // buy
-    for (int i = 0; i < _buyDataList.length; i++) {
-      _buyDataList[i].setX(perWidth * i);
-      _buyDataList[i].setY((_maxVolume - _buyDataList[i].volume) * perHeight);
+    for (int i = 0; i < buyDataList.length; i++) {
+      buyDataList[i].setX(perWidth * i);
+      buyDataList[i].setY((_maxVolume - buyDataList[i].volume) * perHeight);
     }
     // sell
-    for (int i = _sellDataList.length - 1; i >= 0; i--) {
-      _sellDataList[i].setX(size.width - perWidth * (_sellDataList.length - 1 - i));
-      _sellDataList[i].setY((_maxVolume - _sellDataList[i].volume) * perHeight);
+    for (int i = sellDataList.length - 1; i >= 0; i--) {
+      sellDataList[i].setX(size.width - perWidth * (sellDataList.length - 1 - i));
+      sellDataList[i].setY((_maxVolume - sellDataList[i].volume) * perHeight);
     }
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    setBuyDataList(dataListBuy);
-    setSellDataList(dataListSell);
-    setLayout(size);
+    if(buyDataList.isEmpty && sellDataList.isEmpty) {
+      return;
+    }
+    _setLayout(size);
     _drawDepthTitle(canvas, size);
     _drawLineAndBackground(canvas, size);
   }
@@ -111,21 +89,19 @@ class DepthPainter extends CustomPainter{
       10
     ));
   }
-
   void _drawLineAndBackground(Canvas canvas, Size size) {
     // buy background
-    if (_buyDataList.isNotEmpty) {
+    if (buyDataList.isNotEmpty) {
       _path.reset();
-      for (int i = 0; i < _buyDataList.length; i++) {
+      for (int i = 0; i < buyDataList.length; i++) {
         if (i == 0) {
-          _path.moveTo(_buyDataList[i].x, _buyDataList[i].y);
-          print(_buyDataList[i].y);
+          _path.moveTo(buyDataList[i].x, buyDataList[i].y);
         } else {
-          _path.lineTo(_buyDataList[i].x, _buyDataList[i].y);
+          _path.lineTo(buyDataList[i].x, buyDataList[i].y);
         }
       }
-      if (_buyDataList.isNotEmpty && _buyDataList[_buyDataList.length - 1].y < size.height) {
-        _path.lineTo(_buyDataList[_buyDataList.length - 1].x, size.height);
+      if (buyDataList.isNotEmpty && buyDataList[buyDataList.length - 1].y < size.height.toInt()) {
+        _path.lineTo(buyDataList[buyDataList.length - 1].x, size.height);
       }
       _path.lineTo(0, size.height);
       _path.close();
@@ -133,28 +109,28 @@ class DepthPainter extends CustomPainter{
       canvas.drawPath(_path, _paint);
       // buy line
       _path.reset();
-      for (int i = 0; i < _buyDataList.length - 1; i++) {
+      for (int i = 0; i < buyDataList.length - 1; i++) {
         if (i == 0) {
-          _path.moveTo(_buyDataList[i].x, _buyDataList[i].y);
+          _path.moveTo(buyDataList[i].x, buyDataList[i].y);
         } else {
-          _path.lineTo(_buyDataList[i].x, _buyDataList[i].y);
+          _path.lineTo(buyDataList[i].x, buyDataList[i].y);
         }
       }
       _restPainter(_buyLineColor, 1);
       canvas.drawPath(_path, _paint);
     }
     // sell background
-    if (_sellDataList.isNotEmpty) {
+    if (sellDataList.isNotEmpty) {
       _path.reset();
-      for (int i = _sellDataList.length - 1; i >= 0; i--) {
-        if (i == _sellDataList.length - 1) {
-          _path.moveTo(_sellDataList[i].x, _sellDataList[i].y);
+      for (int i = sellDataList.length - 1; i >= 0; i--) {
+        if (i == sellDataList.length - 1) {
+          _path.moveTo(sellDataList[i].x, sellDataList[i].y);
         } else {
-          _path.lineTo(_sellDataList[i].x, _sellDataList[i].y);
+          _path.lineTo(sellDataList[i].x, sellDataList[i].y);
         }
       }
-      if (_sellDataList.isNotEmpty && _sellDataList[0].y < size.height) {
-        _path.lineTo(_sellDataList[0].x, size.height);
+      if (sellDataList.isNotEmpty && sellDataList[0].y < size.height) {
+        _path.lineTo(sellDataList[0].x, size.height);
       }
       _path.lineTo(size.width, size.height);
       _path.close();
@@ -162,18 +138,18 @@ class DepthPainter extends CustomPainter{
       canvas.drawPath(_path, _paint);
       // sell line
       _path.reset();
-      for (int i = 0; i < _sellDataList.length; i++) {
+      for (int i = 0; i < sellDataList.length; i++) {
         if (i == 0) {
-          _path.moveTo(_sellDataList[i].x, _sellDataList[i].y);
+          _path.moveTo(sellDataList[i].x, sellDataList[i].y);
         } else {
-          _path.lineTo(_sellDataList[i].x, _sellDataList[i].y);
+          _path.lineTo(sellDataList[i].x, sellDataList[i].y);
         }
       }
       _restPainter(_sellLineColor, 1);
       canvas.drawPath(_path, _paint);
     }
   }
-
+  /// draw text
   void _drawText(Canvas canvas, String text, Color textColor, Offset offset) {
     TextPainter _textPainter = TextPainter(
       text: TextSpan(

@@ -17,6 +17,7 @@ class KlineView extends StatefulWidget {
   final bool isShowSubview;
   final int viewType;
   final int subviewType;
+
   @override
   _KlineViewState createState() => _KlineViewState();
 }
@@ -34,12 +35,19 @@ class _KlineViewState extends State<KlineView> {
   List<ChartModel> _totalDataList = List();
   List<ChartModel> _viewDataList = List();
   List<String> _detailDataList = List();
+
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
+  void didUpdateWidget(KlineView oldWidget) {
+    super.didUpdateWidget(oldWidget);
     initDataList();
   }
+
+//  @override
+//  void didChangeDependencies() {
+//    super.didChangeDependencies();
+//    initDataList();
+//  }
+
   /// init data list
   Future initDataList() async {
     _totalDataList.clear();
@@ -50,8 +58,10 @@ class _KlineViewState extends State<KlineView> {
       _resetViewData();
     });
   }
+
   /// add one data
   void addSingleData() {}
+
   /// calculate index
   Future _calculateIndex () async {
     _chartCalculator.calculateMa(_totalDataList, false);
@@ -60,6 +70,7 @@ class _KlineViewState extends State<KlineView> {
     _chartCalculator.calculateKDJ(_totalDataList, 9, 3, 3, false);
     _chartCalculator.calculateRSI(_totalDataList, 6, 12, 24, false);
   }
+
   /// display data
   void _resetViewData() {
     _viewDataList.clear();
@@ -96,13 +107,13 @@ class _KlineViewState extends State<KlineView> {
           double upDownAmount = _lastData.closePrice - _lastData.openPrice;
           String upDownRate = _chartUtils.setPrecision(upDownAmount / _lastData.openPrice * 100, 2);
           if (upDownAmount > 0) {
-            _detailDataList.add("+" + upDownAmount.toString());
+            _detailDataList.add("+" + _chartUtils.formatDataNum(upDownAmount));
             _detailDataList.add("+"+upDownRate+"%");
           } else {
-            _detailDataList.add(upDownAmount.toString());
+            _detailDataList.add(_chartUtils.formatDataNum(upDownAmount));
             _detailDataList.add(upDownRate+"%");
           }
-          _detailDataList.add(_lastData.volume.toString());
+          _detailDataList.add(_chartUtils.formatDataNum(_lastData.volume));
           break;
         } else {
           _lastData = null;
@@ -134,19 +145,15 @@ class _KlineViewState extends State<KlineView> {
   }
   /// scale
   void _onScaleUpdate(ScaleUpdateDetails details) {
+    print(details.focalPoint);
+
     if (details.scale > 1) {
       if (_maxViewDataNum <= _viewDataMin) {
         _maxViewDataNum = _viewDataMin;
-      } else if (_viewDataList.length < _maxViewDataNum) {
+      } else if(_viewDataList.length < _maxViewDataNum) {
         _maxViewDataNum -= 2;
         _startDataNum = _totalDataList.length - _maxViewDataNum;
-      }
-//      } else if (_viewDataList[_viewDataList.length - 1].rightEndX / 2 > details.focalPoint.dx) {
-//        _maxViewDataNum -= 2;
-//      } else if (_viewDataList[_viewDataList.length - 1].rightEndX / 2 <= details.focalPoint.dx) {
-//
-//      }
-      else {
+      } else {
         _maxViewDataNum -= 2;
         _startDataNum += 1;
       }
@@ -166,11 +173,11 @@ class _KlineViewState extends State<KlineView> {
     }
     setState(() {
       _isShowDetail = false;
-       _resetViewData();
+      _resetViewData();
      });
   }
   /// horizontal gesture
-  void _moveHorizntal(DragUpdateDetails details) {
+  void _moveHorizontal(DragUpdateDetails details) {
     double _distanceX = details.delta.dx * -1;
     if ((_startDataNum == 0 && _distanceX < 0)
         || (_startDataNum == _totalDataList.length - _maxViewDataNum && _distanceX > 0)
@@ -210,6 +217,7 @@ class _KlineViewState extends State<KlineView> {
   }
   /// move speed
   void _setSpeed(double distanceX, double num) {
+  //  print(distanceX);
     if (distanceX.abs() > 1 && distanceX.abs() < 2) {
       _startDataNum += (distanceX * 10 - (distanceX * 10 ~/ 2) * 2).round();
     } else if (distanceX.abs() < 10) {
@@ -298,7 +306,7 @@ class _KlineViewState extends State<KlineView> {
     return GestureDetector(
       onTapDown: _onTapDown,
       onLongPressMoveUpdate: _onLongPress,
-      onHorizontalDragUpdate: _moveHorizntal,
+      onHorizontalDragUpdate: _moveHorizontal,
       onHorizontalDragEnd: _moveVelocity,
       onScaleUpdate: _onScaleUpdate,
       child: Container(

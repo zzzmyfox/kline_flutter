@@ -83,7 +83,6 @@ class ChartPainter extends CustomPainter {
   List<Pointer> subviewMA5List = List();
   List<Pointer> subviewMA10List = List();
   List<Pointer> subviewMA30List = List();
-
   Path path = Path();
   /// draw
   @override
@@ -117,7 +116,7 @@ class ChartPainter extends CustomPainter {
     resetPaintStyle(color: scaleLineColor, strokeWidth: 0.2, paintingStyle: PaintingStyle.fill);
     //vertical scale line
     _verticalXList.clear();
-    double _horizontalSpace = (_rightEnd - _leftStart - dp2px(15)) / 4;
+    double _horizontalSpace = (_rightEnd - _leftStart - 50) / 4;
     for (int i = 0; i < 5; i++) {
       canvas.drawLine(
           Offset(
@@ -528,7 +527,7 @@ class ChartPainter extends CustomPainter {
   void _drawMaxAndMinPriceText(Canvas canvas) {
     resetPaintStyle(color: Colors.white);
     // max price text
-    String _maxPriceText = setPrecision(_maxPrice, 2);
+    String _maxPriceText = formatDataNum(_maxPrice);
     double _maxPriceTextX;
     if (_maxPriceX + _getTextBounds(_maxPriceText).width + dp2px(5.0) < _verticalXList[_verticalXList.length - 1]) {
       _maxPriceTextX = _maxPriceX + dp2px(5.0);
@@ -543,7 +542,7 @@ class ChartPainter extends CustomPainter {
       _maxPriceY - _getTextBounds(_maxPriceText).height / 2
     ));
     // min price text
-    String _minPriceText = setPrecision(_minPrice, 2);
+    String _minPriceText = formatDataNum(_minPrice);
     double _minPriceTextX;
     if (_minPriceX + _getTextBounds(_minPriceText).width + dp2px(5.0) < _verticalXList[_verticalXList.length - 1]) {
       _minPriceTextX = _minPriceX + dp2px(5.0);
@@ -570,7 +569,7 @@ class ChartPainter extends CustomPainter {
       } else if (i == _verticalXList.length - 1){
         String dateTime = dateFormat(viewDataList[viewDataList.length - 1].timestamp);
         _drawText(canvas, dateTime, scaleTextColor, Offset(
-          _verticalXList[_verticalXList.length - 1],
+          _verticalXList[_verticalXList.length - 1] - 10,
          _horizontalYList[_horizontalYList.length - 1]
         ));
       } else {
@@ -578,7 +577,7 @@ class ChartPainter extends CustomPainter {
           if (data.leftStartX <= _verticalXList[i] && data.rightEndX >= _verticalXList[i]) {
             String dateTime = dateFormat(data.timestamp);
             _drawText(canvas, dateTime, scaleTextColor, Offset(
-                _verticalXList[i],
+                _verticalXList[i] - 10,
                 _horizontalYList[_horizontalYList.length - 1]
             ));
             break;
@@ -593,13 +592,13 @@ class ChartPainter extends CustomPainter {
     double _rightX = _verticalXList[_verticalXList.length - 1] + dp2px(1.0);
     /// price scale text
     // max price
-    String _maxPriceText = setPrecision(_topPrice, 2);
+    String _maxPriceText = formatDataNum(_topPrice);
     _drawText(canvas, _maxPriceText, scaleTextColor, Offset(
       _rightX,
       _horizontalYList[0]
     ));
     // min price
-    String _minPriceText = setPrecision(_botPrice, 2);
+    String _minPriceText = formatDataNum(_botPrice);
     _drawText(canvas, _minPriceText, scaleTextColor, Offset(
       _rightX,
       _priceChartBottom - _getTextBounds(_minPriceText).height
@@ -608,7 +607,7 @@ class ChartPainter extends CustomPainter {
     if (!isShowSubview) {
       double avgPrice = (_topPrice - _botPrice) / 4;
       for (int i = 0; i  < 3; i++) {
-        String price = setPrecision(_topPrice - avgPrice * (i + 1), 2);
+        String price = formatDataNum(_topPrice - avgPrice * (i + 1));
         _drawText(canvas, price, scaleTextColor, Offset(
           _rightX,
           _horizontalYList[i + 1] - _getTextBounds(price).height / 2
@@ -617,7 +616,7 @@ class ChartPainter extends CustomPainter {
     } else {
       double avgPrice = (_topPrice - _botPrice) / 3;
       for (int i = 0; i  < 2; i++) {
-        String price = setPrecision(_topPrice - avgPrice * (i + 1), 2);
+        String price = formatDataNum(_topPrice - avgPrice * (i + 1));
         _drawText(canvas, price, scaleTextColor, Offset(
           _rightX,
           _horizontalYList[i + 1] - _getTextBounds(price).height / 2
@@ -628,21 +627,21 @@ class ChartPainter extends CustomPainter {
       String botSubviewText = "";
       if (subviewType == 0) {
         if (_maxMACD > 0 && _minMACD < 0) {
-          topSubviewText = "$_maxMACD";
-          centerSubviewText = "${(_maxMACD - _minMACD) / 2}";
-          botSubviewText = "$_minMACD";
+          topSubviewText = "${setPrecision(_maxMACD, 2)}";
+          centerSubviewText = "${setPrecision((_maxMACD - _minMACD) / 2, 2)}";
+          botSubviewText = "${setPrecision(_minMACD, 2)}";
         } else if (_maxMACD <= 0) {
           topSubviewText = "0.0";
-          centerSubviewText = "${(_minMACD - _maxMACD) / 2}";
-          botSubviewText = "$_minMACD";
+          centerSubviewText = "${setPrecision((_minMACD - _maxMACD) / 2, 2)}";
+          botSubviewText = "${setPrecision(_minMACD, 2)}";
         } else if (_minMACD >= 0) {
-          topSubviewText = "$_maxMACD";
-          centerSubviewText = "${(_maxMACD - _minMACD) / 2}";
+          topSubviewText = "${setPrecision(_maxMACD, 2)}";
+          centerSubviewText = "${setPrecision((_maxMACD - _minMACD) / 2, 2)}";
           botSubviewText = "0";
         }
       } else if (subviewType == 1) {
-        topSubviewText = "$_maxK";
-        centerSubviewText = "${_maxK / 2}";
+        topSubviewText = "${formatDataNum(_maxK)}";
+        centerSubviewText = "${formatDataNum(_maxK / 2)}";
         botSubviewText = "0.0";
       } else if (subviewType == 2) {
         topSubviewText = "100.0";
@@ -692,14 +691,26 @@ class ChartPainter extends CustomPainter {
     String _indexTopTextThree;
     switch (viewType) {
       case 0:
-         _indexTopTextOne = "MA5:${lastData.priceMA5}";
-         _indexTopTextTwo = "MA10:${lastData.priceMA10}";
-         _indexTopTextThree = "MA30:${lastData.priceMA30}";
+         if (lastData.priceMA5 != null) {
+           _indexTopTextOne = "MA5:${formatDataNum(lastData.priceMA5)}";
+         }
+         if(lastData.priceMA10 != null) {
+           _indexTopTextTwo = "MA10:${formatDataNum(lastData.priceMA10)}";
+         }
+         if(lastData.priceMA30 != null) {
+           _indexTopTextThree = "MA30:${formatDataNum(lastData.priceMA30)}";
+         }
         break;
       case 1:
-        _indexTopTextOne = "BOLL:${lastData.bollMB}";
-        _indexTopTextTwo = "UB:${lastData.bollUP}";
-        _indexTopTextThree = "LB:${lastData.bollDN}";
+        if (lastData.bollMB != null) {
+          _indexTopTextOne = "BOLL:${formatDataNum(lastData.bollMB)}";
+        }
+        if (lastData.bollUP != null) {
+          _indexTopTextTwo = "UB:${formatDataNum(lastData.bollUP)}";
+        }
+        if (lastData.bollDN != null) {
+          _indexTopTextThree = "LB:${formatDataNum(lastData.bollDN)}";
+        }
         break;
       case 2:
         break;
@@ -728,22 +739,25 @@ class ChartPainter extends CustomPainter {
     if (lastData == null) {
       return;
     }
-    String _volumeText = "VOL:${lastData.volume}";
+    String _volumeText = "";
+    String _volumeMA5 = "";
+    String _volumeMA10 = "";
     if (lastData.volume != null) {
+    _volumeText = "VOL:${formatDataNum(lastData.volume)}";
       _drawText(canvas, _volumeText, ma30Color, Offset(
           _verticalXList[0],
           _priceChartBottom
       ));
     }
-    String _volumeMA5 = "MA5:${lastData.volumeMA5}";
     if (lastData.volumeMA5 != null) {
+    _volumeMA5 = "MA5:${formatDataNum(lastData.volumeMA5)}";
       _drawText(canvas, _volumeMA5, ma5Color, Offset(
           _verticalXList[0] + _getTextBounds(_volumeText).width + dp2px(5.0),
           _priceChartBottom
       ));
     }
-    String _volumeMA10 = "MA10:${lastData.volumeMA10}";
     if (lastData.volumeMA10 != null) {
+      _volumeMA10 = "MA10:${formatDataNum(lastData.volumeMA10)}";
       _drawText(canvas, _volumeMA10, ma10Color, Offset(
           _verticalXList[0] + _getTextBounds(_volumeText).width + _getTextBounds(_volumeMA5).width + dp2px(10.0),
           _priceChartBottom
@@ -758,13 +772,13 @@ class ChartPainter extends CustomPainter {
     if (isShowSubview && subviewType == 0) {
       titleText = "MACD(12,26,9)";
       if (lastData.macd != null) {
-        firstText = "MACD:"+"${lastData.macd}";
+        firstText = "MACD:"+"${formatDataNum(lastData.macd)}";
       }
       if (lastData.dif != null) {
-        secondText = "DIF:"+"${lastData.dif}";
+        secondText = "DIF:"+"${formatDataNum(lastData.dif)}";
       }
       if (lastData.dea != null) {
-        thirdText = "DEA:"+"${lastData.dea}";
+        thirdText = "DEA:"+"${formatDataNum(lastData.dea)}";
       }
     } else if (isShowSubview && subviewType == 1) {
       titleText = "KDJ(9,3,3)";
@@ -1022,6 +1036,19 @@ class ChartPainter extends CustomPainter {
   String setPrecision(double num, int scale) {
     return num. toStringAsFixed(scale);
   }
+
+  String formatDataNum(double num) {
+    if (num < 1) {
+      return setPrecision(num, 6);
+    } else if (num < 10) {
+      return setPrecision(num, 5);
+    } else if (num < 100) {
+      return setPrecision(num, 4);
+    } else {
+      return setPrecision(num, 2);
+    }
+  }
+
   /// date format
   String dateFormat(int timestamp) {
     List<String> dateList = DateTime.fromMillisecondsSinceEpoch(timestamp).toString().split(" ");
@@ -1049,9 +1076,15 @@ class ChartPainter extends CustomPainter {
     double scale = window.devicePixelRatio;
     return dp * scale;
   }
+
+
+  double px2dp(double px) {
+    double scale = window.devicePixelRatio;
+    return px / scale;
+  }
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     // TODO: implement shouldRepaint
-    return viewDataList != null;
+    return true;
   }
 }

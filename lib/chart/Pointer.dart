@@ -5,13 +5,6 @@ class Pointer {
     this.x = x;
   }
   void setY(double y) {
-   this.y = y;
-  }
-  @override
-  String toString() {
-    return "Pointer{" +
-        "x=" + "$x" +
-        ", y=" + "$y" +
-        '}';
+    this.y = y;
   }
 }

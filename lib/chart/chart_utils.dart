@@ -14,4 +14,16 @@ class ChartUtils {
   String setPrecision(double num, int scale) {
     return num.toStringAsFixed(scale);
   }
+
+  String formatDataNum(double num) {
+    if (num < 1) {
+      return setPrecision(num, 6);
+    } else if (num < 10) {
+      return setPrecision(num, 5);
+    } else if (num < 100) {
+      return setPrecision(num, 4);
+    } else {
+      return setPrecision(num, 2);
+    }
+  }
 }

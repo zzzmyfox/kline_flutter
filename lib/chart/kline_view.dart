@@ -9,6 +9,7 @@ import 'package:kchart/chart/chart_utils.dart';
 class KlineView extends StatefulWidget {
   KlineView({
     this.dataList,
+    this.currentDataType,
     this.isShowSubview:false,
     this.viewType:0,
     this.subviewType:0,
@@ -17,7 +18,7 @@ class KlineView extends StatefulWidget {
   final bool isShowSubview;
   final int viewType;
   final int subviewType;
-
+  final String currentDataType;
   @override
   _KlineViewState createState() => _KlineViewState();
 }
@@ -33,42 +34,70 @@ class _KlineViewState extends State<KlineView> {
   ChartCalculator _chartCalculator = ChartCalculator();
   ChartUtils _chartUtils = ChartUtils();
   List<ChartModel> _totalDataList = List();
+  List<ChartModel> _endDataList = List();
   List<ChartModel> _viewDataList = List();
   List<String> _detailDataList = List();
+  String _currentData;
 
   @override
   void didUpdateWidget(KlineView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    initDataList();
+    init();
   }
 
-//  @override
-//  void didChangeDependencies() {
-//    super.didChangeDependencies();
-//    initDataList();
-//  }
+  void init(){
+    if (_startDataNum >= _totalDataList.length -_maxViewDataNum){
+      initDataList();
+      _currentData = widget.currentDataType;
+    } else {
+      if (_currentData != widget.currentDataType){
+        initDataList();
+      }
+    }
+  }
 
   /// init data list
   Future initDataList() async {
     _totalDataList.clear();
     _totalDataList.addAll(widget.dataList);
     _startDataNum = _totalDataList.length - _maxViewDataNum;
-    _calculateIndex ();
+    _calculateIndex (_totalDataList, false);
     setState(() {
       _resetViewData();
     });
   }
-
   /// add one data
-  void addSingleData() {}
+  Future addSingleData() async {
+    _endDataList.clear();
+    int startIndex;
+    if (_totalDataList.length >= _maxViewDataNum) {
+      startIndex = _totalDataList.length - _maxViewDataNum;
+    } else {
+      startIndex = 0;
+    }
+    _endDataList.addAll(_totalDataList.sublist(startIndex, _totalDataList.length));
+    _endDataList.add(widget.dataList[widget.dataList.length - 1]);
+    _calculateIndex (_endDataList, true);
+    _totalDataList.add(_endDataList[_endDataList.length - 1]);
+    if (_totalDataList.length >= _maxViewDataNum && _startDataNum == _totalDataList.length - _maxViewDataNum - 1) {
+      setState(() {
+        _startDataNum++;
+        _resetViewData();
+      });
+    } else {
+      setState(() {
+        _resetViewData();
+      });
+    }
+  }
 
   /// calculate index
-  Future _calculateIndex () async {
-    _chartCalculator.calculateMa(_totalDataList, false);
-    _chartCalculator.calculateBoll(_totalDataList, 26, 2, false);
-    _chartCalculator.calculateMACD(_totalDataList, 12, 26, 9, false);
-    _chartCalculator.calculateKDJ(_totalDataList, 9, 3, 3, false);
-    _chartCalculator.calculateRSI(_totalDataList, 6, 12, 24, false);
+  Future _calculateIndex (List<ChartModel> dataList, bool isEndData) async {
+    _chartCalculator.calculateMa(dataList, isEndData);
+    _chartCalculator.calculateBoll(dataList, 26, 2, isEndData);
+    _chartCalculator.calculateMACD(dataList, 12, 26, 9, isEndData);
+    _chartCalculator.calculateKDJ(dataList, 9, 3, 3, isEndData);
+    _chartCalculator.calculateRSI(dataList, 6, 12, 24, isEndData);
   }
 
   /// display data
@@ -145,8 +174,6 @@ class _KlineViewState extends State<KlineView> {
   }
   /// scale
   void _onScaleUpdate(ScaleUpdateDetails details) {
-    print(details.focalPoint);
-
     if (details.scale > 1) {
       if (_maxViewDataNum <= _viewDataMin) {
         _maxViewDataNum = _viewDataMin;

@@ -12,7 +12,6 @@ class ChartCalculator {
   static int _day30 = 30;
   double bezierRatio = 0.16;
   static List<ChartModel> _cacheList = List();
-
   /// MA
   void calculateMa(List<ChartModel> dataList, bool isEndData) {
     if (dataList == null || dataList.isEmpty) {
@@ -113,8 +112,6 @@ class ChartCalculator {
       data.setBollUP(up);
       data.setBollDN(dn);
     }
-
-
   }
   /// MACD
   void calculateMACD(List<ChartModel> dataList, int fastPeriod, int slowPeriod, int signalPeriod, bool isEndData) {
@@ -346,7 +343,6 @@ class ChartCalculator {
       }
     }
   }
-
   void setLinePath(List<Pointer> pointerList, Path path) {
     path.reset();
     if (pointerList == null || pointerList.isEmpty) {

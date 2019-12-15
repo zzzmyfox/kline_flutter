@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:kchart/chart/chart_model.dart';
 import 'package:kchart/chart/kline_view.dart';
-import 'package:kchart/dashboard_widget.dart';
 import 'package:kchart/depth/depth_view.dart';
 import 'package:kchart/dio_util.dart';
 
@@ -27,34 +26,46 @@ class _ExampleState extends State<Example> with TickerProviderStateMixin{
   bool _isShowSubview = false;
   int _viewTypeIndex = 0;
   int _subviewTypeIndex = 0;
+  /// 深度图
   List _bidsList = List();
   List _asksList = List();
+
+  String _currentDataType;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 8, vsync: this);
-    getKDataList(3);
-    getDepthList();
+    _tabController = TabController(length: 8, vsync: this, initialIndex: 0);
+    getKDataList(0);
+    timer();
+//    getDepthList();
   }
-
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _tabController.dispose();
   }
 
+
+  void timer() {
+    getKDataList(0);
+    Future.delayed(Duration(seconds: 1), () => timer());
+  }
+
+  ///
+  /// kline request
+  ///
   Future getKDataList(int index) async{
-    Response response = await dio.get("");
+    Response response = await dio.get("https://----------------/m/kline/ethzc/${_timeIndex[index]}/1000");
     setState(() {
       lines.clear();
       Map data = response.data;
       lines.addAll(data["data"]["lines"].reversed);
       getKlineDataList(lines);
-      print(data["data"]["lines"].length);
+      _currentDataType = _timeIndex[index]+"ethzc";
     });
   }
+
   // lines data model
   List<ChartModel> getKlineDataList(List data) {
     dataList.clear();
@@ -72,9 +83,13 @@ class _ExampleState extends State<Example> with TickerProviderStateMixin{
     }
     return dataList;
   }
-  // depth
+  ///
+  ///
+  ///depth request
+  ///
+  ///
   Future getDepthList() async {
-    Map data = await DioUtil.get("");
+    Map data = await DioUtil.get("https://------------------/m/depth/ethzc");
     setState(() {
       _bidsList = data["bids"];
       _asksList = data["asks"];
@@ -82,13 +97,14 @@ class _ExampleState extends State<Example> with TickerProviderStateMixin{
   }
   List<DepthModel> depthList(List dataList) {
     List<DepthModel> depthList = List();
-    for (int i = 0; i < dataList.length; i++) {
+    for (int i = 0; i < 12; i++) {
       double price = dataList[i][0].toDouble();
       double volume = dataList[i][1].toDouble();
       depthList.add(DepthModel(price, volume));
     }
     return depthList;
   }
+
 
   void viewType(int type) {
     switch (type) {
@@ -126,7 +142,6 @@ class _ExampleState extends State<Example> with TickerProviderStateMixin{
       body: SingleChildScrollView(
         child:  Column(
           children: <Widget>[
-            DashboardWidget(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
@@ -261,9 +276,15 @@ class _ExampleState extends State<Example> with TickerProviderStateMixin{
               ),
             ) : Container(),
             Container(
-                child: KlineView(dataList: dataList, isShowSubview: _isShowSubview, viewType: _viewTypeIndex, subviewType: _subviewTypeIndex,)
+                child: KlineView(
+                  dataList: dataList,
+                  currentDataType: _currentDataType,
+                  isShowSubview: _isShowSubview,
+                  viewType: _viewTypeIndex,
+                  subviewType: _subviewTypeIndex,
+                )
             ),
-            DepthView(depthList(_bidsList), depthList(_asksList)),
+            //DepthView(depthList(_bidsList), depthList(_asksList)),
           ],
         ),
       )

@@ -6,7 +6,7 @@
 
 ## k线
 
-使用第三方库`dio`求网路数据，使用下面函数对k线数据进行加工
+使用第三方库`dio`请求网路数据，使用下面函数对k线数据进行加工
 ```dart 
   // k线数据模型
   List<ChartModel> getKlineDataList(List data) {
@@ -32,15 +32,47 @@
   }
 ```
 
+拿到处理好对数据放入控件`KlineView()` 
+```dart
+ Container(
+                  child: KlineView(
+                dataList: dataList,
+                currentDataType: _currentDataType,
+                isShowSubview: _isShowSubview,
+                viewType: _viewTypeIndex,
+                subviewType: _subviewTypeIndex,
+              )),
+```
+
 
 ## 深度图
 
 深度图现在还是半成品，现在还没有展示详细数据功能，但是不影响使用
 
-使用很简单，直接把网络数据转成list，放到 `DepthView()`里即可
+使用很简单，直接把网络数据，然后使用下面函数对数据进行加工
+```dart
+  List<DepthModel> depthList(List dataList) {
+    List<DepthModel> depthList = List();
+    int length = 0;
+    if (dataList.length > 12) {
+      length = 12;
+    } else {
+      length = dataList.length;
+    }
+    for (int i = 0; i < length; i++) {
+      double price = dataList[i][0].toDouble();
+      double volume = dataList[i][1].toDouble();
+      depthList.add(DepthModel(price, volume));
+    }
+    return depthList;
+  }
+
+```
+
+
 
 ```dart 
-DepthView(bidsList, asksList);
+ DepthView(depthList(_bidsList), depthList(_asksList)),
 ```
 
 

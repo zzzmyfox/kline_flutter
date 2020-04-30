@@ -1,11 +1,13 @@
 # kchart Flutter
 
-Flutter 版本的 k线 和 深度图控件， 实现了 指标ma10 , ma15, m30
+ 纯Flutter开发的k线和深度图控件，实现了MA,BOLL, MACD, KDJ, RSI指标，欢迎issue
 
+![示例图片](https://github.com/zzzmyfox/kline_flutter/blob/master/example.png)
 
 ## Getting Started
 
-请求后台数据然后处理
+请求网路数据
+
 ```dart 
   // k线数据模型
   List<ChartModel> getKlineDataList(List data) {
@@ -30,4 +32,3 @@ Flutter 版本的 k线 和 深度图控件， 实现了 指标ma10 , ma15, m30
     return kDataList;
   }
 ```
-

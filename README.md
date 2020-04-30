@@ -4,7 +4,7 @@
 
 <img src="https://github.com/zzzmyfox/kline_flutter/blob/master/example.png" width="270" hegiht="400" align=center />
 
-## k线
+## 一、k线
 
 使用第三方库`dio`请求网路数据，使用下面函数对k线数据进行加工
 ```dart 
@@ -45,7 +45,7 @@
 ```
 
 
-## 深度图
+## 二、深度图
 
 深度图现在还是半成品，现在还没有展示详细数据功能，但是不影响使用
 

@@ -49,7 +49,7 @@
 
 深度图现在还是半成品，现在还没有展示详细数据功能，但是不影响使用
 
-使用很简单，直接把网络数据，然后使用下面函数对数据进行加工
+使用很简单，请求网路数据，然后使用下面函数对数据进行加工
 ```dart
   List<DepthModel> depthList(List dataList) {
     List<DepthModel> depthList = List();
@@ -76,7 +76,7 @@
 ```
 
 
-
+###具体使用方法可以参考example.dart
 
 
 

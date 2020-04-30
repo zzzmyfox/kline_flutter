@@ -2,7 +2,7 @@
 
  纯Flutter开发的k线和深度图控件，实现了MA,BOLL, MACD, KDJ, RSI指标，欢迎issue
 
-<img src="https://github.com/zzzmyfox/kline_flutter/blob/master/example.png" width="270" hegiht="400" align=center />
+<img src="https://github.com/zzzmyfox/kline_flutter/blob/master/example.png" width="375" hegiht="500" align=center />
 
 ## 一、k线
 

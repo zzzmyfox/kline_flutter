@@ -31,17 +31,17 @@
     return kDataList;
   }
 ```
+拿到处理好对数据加入控件`KlineView()` 
 
-拿到处理好对数据放入控件`KlineView()` 
 ```dart
- Container(
-                  child: KlineView(
-                dataList: dataList,
-                currentDataType: _currentDataType,
-                isShowSubview: _isShowSubview,
-                viewType: _viewTypeIndex,
-                subviewType: _subviewTypeIndex,
-              )),
+  Container(
+     child: KlineView(
+       dataList: dataList,
+       currentDataType: _currentDataType,
+       isShowSubview: _isShowSubview,
+       viewType: _viewTypeIndex,
+       subviewType: _subviewTypeIndex,
+  )),
 ```
 
 
@@ -69,7 +69,7 @@
 
 ```
 
-
+拿到处理好对数据加入控件`DepthView()` 
 
 ```dart 
  DepthView(depthList(_bidsList), depthList(_asksList)),

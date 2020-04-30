@@ -1,17 +1,33 @@
-# kchart
+# kchart Flutter
 
-A new Flutter application.
+Flutter 版本的 k线 和 深度图控件， 实现了 指标ma10 , ma15, m30
+
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+请求后台数据然后处理
+```dart 
+  // k线数据模型
+  List<ChartModel> getKlineDataList(List data) {
+    List<ChartModel> kDataList = List();
+    for (int i = 0; i < data.length; i++) {
+      int timestamp = data[i][0].toInt();
+      //timestamp
+      double openPrice = data[i][1].toDouble();
+      // open
+      double closePrice = data[i][4].toDouble();
+      // close
+      double maxPrice = data[i][2].toDouble();
+      // max
+      double minPrice = data[i][3].toDouble();
+      // min
+      double volume = data[i][5].toDouble();
+      if (volume > 0) {
+        kDataList.add(ChartModel(
+            timestamp, openPrice, closePrice, maxPrice, minPrice, volume));
+      }
+    }
+    return kDataList;
+  }
+```
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# kline_flutter

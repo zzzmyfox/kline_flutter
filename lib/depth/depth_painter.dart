@@ -3,36 +3,38 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'depth_model.dart';
 
-class DepthPainter extends CustomPainter{
-
+class DepthPainter extends CustomPainter {
   DepthPainter({
     this.buyDataList,
     this.sellDataList,
-    this.pricePrecision:4,
+    this.pricePrecision: 4,
   });
   final List<DepthModel> buyDataList;
-  final List<DepthModel>  sellDataList;
+  final List<DepthModel> sellDataList;
   final int pricePrecision;
+
   ///
   Path _path = Path();
   Paint _paint = Paint();
+
   /// colors
   Color _textColor = Colors.grey;
   Color _buyLineColor = Color(0xFF2BB8AB);
   Color _buyBackgroundColor = Color(0x662BB8AB);
   Color _sellLineColor = Color(0xFFFF5442);
   Color _sellBackgroundColor = Color(0x66FF5442);
+
   ///
   double _maxVolume;
   double _avgVolumeSpace;
   double _avgOrinateSpace;
   String _rightPriceText;
   String _leftPriceText;
+
   ///
   double _bottomEnd;
 
   void _setLayout(Size size) {
-
     _bottomEnd = size.height - 10;
     // buy
     double maxBuyVolume;
@@ -55,23 +57,23 @@ class DepthPainter extends CustomPainter{
     _maxVolume = max(maxBuyVolume, maxSellVolume);
     double minVolume = min(minBuyVolume, minSellVolume);
 
-
     if (buyDataList.isNotEmpty) {
       _leftPriceText = setPrecision(buyDataList[0].price, pricePrecision);
     } else if (sellDataList.isNotEmpty) {
-      _leftPriceText = setPrecision(sellDataList[0].price, pricePrecision);
+      _leftPriceText = setPrecision(buyDataList[0].price, pricePrecision);
     } else {
       _leftPriceText = "0.0";
     }
 
     if (sellDataList.isNotEmpty) {
-      _rightPriceText = setPrecision(sellDataList[sellDataList.length - 1].price, pricePrecision);
+      _rightPriceText = setPrecision(
+          sellDataList[sellDataList.length - 1].price, pricePrecision);
     } else if (buyDataList.isNotEmpty) {
-      _rightPriceText = setPrecision(buyDataList[buyDataList.length - 1].price, pricePrecision);
+      _rightPriceText = setPrecision(
+          buyDataList[buyDataList.length - 1].price, pricePrecision);
     } else {
       _rightPriceText = "0.0";
     }
-
 
     double perHeight = _bottomEnd / (_maxVolume - minVolume);
     double perWidth = size.width / (buyDataList.length + sellDataList.length);
@@ -84,14 +86,15 @@ class DepthPainter extends CustomPainter{
     }
     // sell
     for (int i = sellDataList.length - 1; i >= 0; i--) {
-      sellDataList[i].setX(size.width - perWidth * (sellDataList.length - 1 - i));
+      sellDataList[i]
+          .setX(size.width - perWidth * (sellDataList.length - 1 - i));
       sellDataList[i].setY((_maxVolume - sellDataList[i].volume) * perHeight);
     }
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    if(buyDataList.isEmpty && sellDataList.isEmpty) {
+    if (buyDataList.isEmpty && sellDataList.isEmpty) {
       return;
     }
     _setLayout(size);
@@ -99,26 +102,25 @@ class DepthPainter extends CustomPainter{
     _drawLineAndBackground(canvas, size);
     _drawCoordinateText(canvas, size);
   }
+
   void _drawDepthTitle(Canvas canvas, Size size) {
     // buy
     String buyText = "买盘";
     double textWidth = _getTextBounds(buyText).width;
-    Rect buyRect = Rect.fromLTRB(size.width / 2 - textWidth, 12, size.width / 2 - textWidth - 10,  textWidth + 2);
+    Rect buyRect = Rect.fromLTRB(size.width / 2 - textWidth, 12,
+        size.width / 2 - textWidth - 10, textWidth + 2);
     _restPainter(_buyLineColor, 1, paintingStyle: PaintingStyle.fill);
     canvas.drawRect(buyRect, _paint);
-    _drawText(canvas, buyText, _textColor, Offset(
-        size.width / 2 - textWidth,
-        10
-    ));
+    _drawText(
+        canvas, buyText, _textColor, Offset(size.width / 2 - textWidth, 10));
     // sell
     String sellText = "卖盘";
-    Rect sellRect = Rect.fromLTRB(size.width / 2 + textWidth, 12, size.width / 2 + textWidth - 10,  textWidth + 2);
+    Rect sellRect = Rect.fromLTRB(size.width / 2 + textWidth, 12,
+        size.width / 2 + textWidth - 10, textWidth + 2);
     _restPainter(_sellLineColor, 1, paintingStyle: PaintingStyle.fill);
     canvas.drawRect(sellRect, _paint);
-    _drawText(canvas, sellText, _textColor, Offset(
-        size.width / 2 + textWidth,
-        10
-    ));
+    _drawText(
+        canvas, sellText, _textColor, Offset(size.width / 2 + textWidth, 10));
   }
 
   void _drawLineAndBackground(Canvas canvas, Size size) {
@@ -132,7 +134,8 @@ class DepthPainter extends CustomPainter{
           _path.lineTo(buyDataList[i].x, buyDataList[i].y);
         }
       }
-      if (buyDataList.isNotEmpty && buyDataList[buyDataList.length - 1].y < _bottomEnd.toInt()) {
+      if (buyDataList.isNotEmpty &&
+          buyDataList[buyDataList.length - 1].y < _bottomEnd.toInt()) {
         _path.lineTo(buyDataList[buyDataList.length - 1].x, _bottomEnd);
       }
       _path.lineTo(0, _bottomEnd);
@@ -184,25 +187,24 @@ class DepthPainter extends CustomPainter{
 
   /// scale text
   void _drawCoordinateText(Canvas canvas, Size size) {
-    _drawText(canvas, _leftPriceText, _textColor, Offset(
-        0,
-        size.height - _getTextBounds(_leftPriceText).height
-    ));
-    _drawText(canvas, _rightPriceText, _textColor, Offset(
-        size.width - _getTextBounds(_rightPriceText).width,
-        size.height - _getTextBounds(_rightPriceText).height
-    ));
-    _drawText(canvas, (_leftPriceText), _textColor, Offset(
-        size.width / 2 - _getTextBounds("0").width,
-        size.height - _getTextBounds("0").height
-    ));
+    _drawText(canvas, _leftPriceText, _textColor, Offset(0, _bottomEnd));
+    _drawText(canvas, _rightPriceText, _textColor,
+        Offset(size.width - _getTextBounds(_rightPriceText).width, _bottomEnd));
+    _drawText(
+        canvas,
+        formatDataNum(
+            (double.parse(_rightPriceText) - double.parse(_leftPriceText)) / 2),
+        _textColor,
+        Offset(size.width / 2 - _getTextBounds("0").width, _bottomEnd));
 
-    for (int i = 0; i < 5; i ++) {
+    for (int i = 0; i < 5; i++) {
       String ordinateStr = formatDataNum(_maxVolume - i * _avgVolumeSpace);
-      _drawText(canvas, ordinateStr, _textColor, Offset(
-          size.width - _getTextBounds(ordinateStr).width,
-          _getTextBounds(ordinateStr).height + i * _avgOrinateSpace
-      ));
+      _drawText(
+          canvas,
+          ordinateStr,
+          _textColor,
+          Offset(size.width - _getTextBounds(ordinateStr).width,
+              _getTextBounds(ordinateStr).height + i * _avgOrinateSpace));
     }
   }
 
@@ -233,8 +235,7 @@ class DepthPainter extends CustomPainter{
             fontSize: fontSize ?? 10.0,
           ),
         ),
-        textDirection: TextDirection.ltr
-    );
+        textDirection: TextDirection.ltr);
     _textPainter.layout();
     return Size(_textPainter.width, _textPainter.height);
   }
@@ -256,11 +257,13 @@ class DepthPainter extends CustomPainter{
     }
   }
 
-  void _restPainter(Color color, double strokeWidth, {PaintingStyle paintingStyle}) {
-    _paint..color = color
+  void _restPainter(Color color, double strokeWidth,
+      {PaintingStyle paintingStyle}) {
+    _paint
+      ..color = color
       ..isAntiAlias = true
       ..strokeWidth = strokeWidth
-      ..style = paintingStyle??PaintingStyle.stroke;
+      ..style = paintingStyle ?? PaintingStyle.stroke;
   }
 
   @override

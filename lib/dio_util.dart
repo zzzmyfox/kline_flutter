@@ -7,7 +7,7 @@ class DioUtil {
 
   /// get
   static Future get(String url) async {
-    dio.options.baseUrl = "https://www.zzex.me";
+    dio.options.baseUrl = "https://www.peppa.me";
     try {
       Response response = await dio.get(url);
       return response.data;

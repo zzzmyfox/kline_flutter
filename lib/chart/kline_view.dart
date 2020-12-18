@@ -14,6 +14,7 @@ class KlineView extends StatefulWidget {
       this.viewType: 0,
       this.subviewType: 0,
       this.currentDataType});
+
   final List<ChartModel> dataList;
   final bool isShowSubview;
   final int viewType;
